@@ -2,14 +2,29 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include "image.h"
+#include "../include/image.h"
+
+struct Image {
+    int largeur;
+    int hauteur;
+    int mat_rouge[LARGEUR_MAX][HAUTEUR_MAX];
+    int mat_vert[LARGEUR_MAX][HAUTEUR_MAX];
+    int mat_bleu[LARGEUR_MAX][HAUTEUR_MAX];
+};
+
+struct Histogramme {
+    int tab_rouge[256];
+    int tab_vert[256];
+    int tab_bleu[256];
+};
+
+enum Couleur {ROUGE, VERT, BLEU, JAUNE };
 
 /* Convertir un nombre décimal en binaire */
-char* decimalEnBinaire(int decimal) {
+char* decimal_en_binaire(int decimal) {
     char* binaire = (char*)malloc(33 * sizeof(char));
     int index = 0;
     int num = decimal;
-    int i;
     char temp;
     
     if (decimal == 0) {
@@ -39,14 +54,13 @@ char* decimalEnBinaire(int decimal) {
 }
 
 /* Convertir un nombre binaire en décimal */
-int binaireEnDecimal(char* binaire) {
+int binaire_en_decimal(char* binaire) {
     int decimal = 0;
     int puissance = 0;
     int longueur = strlen(binaire);
-    int i;
     
     /* Lire de droite à gauche */
-    for (i = longueur - 1; i >= 0; i--) {
+    for (int i = longueur-1; i >= 0; i--) {
         if (binaire[i] == '1') {
             decimal = decimal + (int)pow(2, puissance);
         }
