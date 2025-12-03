@@ -8,17 +8,40 @@ typedef struct Image * Image;
 typedef struct Histogramme * Histogramme;
 typedef enum Couleur * Couleur;
 
-int lire_image(Image image);
-Image niveau_gris_image(Image image);
+/* Initialise une image (allocation mémoire) */
+Image init_image(void);
+
+/* Lit et remplit une variable de type Image */
+void lire_image(Image *ptr_image);
+
+/* Affiche une image par pixels (R,V,B) */
+void afficher_image_pixels(Image image);
+
+/* Affiche successivement les 3 matrices d'une image */
+void afficher_image_matrices(Image image);
+
+/* Transforme les 3 matrices d'une image pour les passer à un certain niveau de gris (passé en paramètre) */
+Image niveau_gris_image(Image image, int niveau_gris);
+
+/* à coder */
 int quantifier_pixel(int pixel[3], int niveau_quantification);
+
+/* à coder */
 Image quantifier_image(Image image);
 
+/* à coder */
 Histogramme histogramme_image(Image image);
 
+/* à coder */
 Couleur trouver_couleur_objet(Histogramme hist);
+
+/* à coder */
 Couleur pixel_vers_couleur(int pixel[3], int seuil);
 
+/* Convertit un nombre décimal en binaire (sur 8 bits) */
 char* decimal_en_binaire(int decimal);
+
+/* Convertit un nombre binaire (sur 8 bits) en décimal  */
 int binaire_en_decimal(char* binaire);
 
 #endif
