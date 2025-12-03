@@ -1,0 +1,14 @@
+{
+    "messages": {
+        "demande_commande": "Que veux-tu que le robot fasse ?",
+        "erreur_commande": "Je n’ai pas compris la commande.",
+        "confirmation": "D’accord."
+    },
+
+    "commandes": {
+        "avance": ["avance", "va tout droit", "marche"],
+        "gauche": ["gauche", "tourne à gauche"],
+        "droite": ["droite", "tourne à droite"],
+        "stop": ["stop", "arrête", "halt"]
+    }
+}
