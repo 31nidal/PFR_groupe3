@@ -28,6 +28,7 @@ Image init_image(void) {
     return image;
 }
 
+
 void lire_image(Image *ptr_image) {
     int largeur, hauteur, tmp, valeur_pixel;
 
@@ -45,24 +46,26 @@ void lire_image(Image *ptr_image) {
                 /* Remplit la matrice rouge */
                 if (k == 0) (*ptr_image)->mat_rouge[i][j] = valeur_pixel;
 
-                /* Remplit la matrice bleue */
-                if (k == 1) (*ptr_image)->mat_bleu[i][j] = valeur_pixel;
-
                 /* Remplit la matrice verte */
-                if (k == 2) (*ptr_image)->mat_vert[i][j] = valeur_pixel;
+                if (k == 1) (*ptr_image)->mat_vert[i][j] = valeur_pixel;
+
+                /* Remplit la matrice bleue */
+                if (k == 2) (*ptr_image)->mat_bleu[i][j] = valeur_pixel;
             }
         }
     }
 }
 
+
 void afficher_image_pixels(Image image) {
     for (int i=0 ; i<image->largeur ; i++) {
         for (int j=0 ; j<image->hauteur ; j++) {
-            printf("(%d,%d,%d) ", image->mat_rouge[i][j], image->mat_bleu[i][j], image->mat_vert[i][j]);
+            printf("(%d, %d, %d) ", image->mat_rouge[i][j], image->mat_vert[i][j], image->mat_bleu[i][j]);
         }
         printf("\n");
     }
 }
+
 
 void afficher_image_matrices(Image image) {
     for (int k=0 ; k<3 ; k++) {
@@ -81,6 +84,7 @@ void afficher_image_matrices(Image image) {
         }
     }
 }
+
 
 Image niveau_gris_image(Image image, int niveau_gris) {
     /* Vérification du niveau de gris */
@@ -103,36 +107,86 @@ Image niveau_gris_image(Image image, int niveau_gris) {
     return image;
 }
 
+
+int quantifier_pixel(int pixel[3], int seuil_quantif) {
+    /* Initialisation de la chaîne quantifiée et autres variables */
+    char bin_quantif[3*seuil_quantif+1];
+    int dec_quantif, index = 0;
+
+    /* Conversion des valeurs des pixels en binaire */
+    char* bin_rouge = decimal_en_binaire(pixel[0]);
+    char* bin_vert = decimal_en_binaire(pixel[1]);
+    char* bin_bleu = decimal_en_binaire(pixel[2]);
+
+    /* Remplit la chaîne quantifiée */
+    for (int k=0 ; k<3 ; k++) {
+        for (int i=0 ; i<seuil_quantif ; i++) {
+            if (k==0) bin_quantif[index] = bin_rouge[i];
+            if (k==1) bin_quantif[index] = bin_vert[i];
+            if (k==2) bin_quantif[index] = bin_bleu[i];
+            index++;
+        }
+    }
+    bin_quantif[index] = '\0';
+
+    /* Conversion de la valeur du pixel quantifié en décimal */
+    dec_quantif = binaire_en_decimal(bin_quantif);
+
+    return dec_quantif;
+}
+
+
+int** quantifier_image(Image image) {
+    /* Initialisation de la matrice des pixels quantifiés */
+    int** mat_quantif = (int**) malloc((image->largeur) * sizeof(int*));
+    for (int i=0 ; i<image->largeur ; i++) {
+        mat_quantif[i] = (int*) malloc((image->hauteur) * sizeof(int));
+    }
+
+    /* Initialisation du pixel courant */
+    int pixel[3];
+
+    /* Remplissage de la matrice */
+    for (int i=0 ; i<image->largeur ; i++) {
+        for (int j=0 ; j<image->hauteur ; j++) {
+
+            /* Remplissage du pixel courant */
+            pixel[0] = image->mat_rouge[i][j];
+            pixel[1] = image->mat_vert[i][j];
+            pixel[2] = image->mat_bleu[i][j];
+
+            /* Ajout du pixel quantifié à la matrice */
+            mat_quantif[i][j] = quantifier_pixel(pixel, 2);
+        } 
+    }
+
+    return mat_quantif;
+}
+
+
+int get_largeur(Image image) {
+    return image->largeur;
+}
+
+
+int get_hauteur(Image image) {
+    return image->hauteur;
+}
+
+/* =========== à déplacer =========== */
+
 /* Convertir un nombre décimal en binaire */
 char* decimal_en_binaire(int decimal) {
-    char* binaire = (char*)malloc(33 * sizeof(char));
-    int index = 0;
-    int num = decimal;
-    char temp;
+    char* binaire = (char*)malloc(9 * sizeof(char));
+    int bit;
     
-    if (decimal == 0) {
-        strcpy(binaire, "0");
-        return binaire;
+    for (int i=7 ; i>=0 ; i--) {
+        bit = decimal % 2;
+        binaire[i] = bit + '0';
+        decimal = decimal / 2;
     }
     
-    /* Extraire les bits */
-    while (num > 0) {
-        binaire[index++] = (num % 2) + '0';
-        num /= 2;
-    }
-    binaire[index] = '\0';
-    
-    /* Inverser la chaîne */
-    int debut = 0;
-    int fin = index - 1;
-    while (debut < fin) {
-        temp = binaire[debut];
-        binaire[debut] = binaire[fin];
-        binaire[fin] = temp;
-        debut++;
-        fin--;
-    }
-    
+    binaire[8] = '\0';
     return binaire;
 }
 

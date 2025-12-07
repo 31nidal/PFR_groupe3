@@ -23,11 +23,11 @@ void afficher_image_matrices(Image image);
 /* Transforme les 3 matrices d'une image pour les passer à un certain niveau de gris (passé en paramètre) */
 Image niveau_gris_image(Image image, int niveau_gris);
 
-/* à coder */
+/* Retourne la valeur décimal d'un pixel quantifié */
 int quantifier_pixel(int pixel[3], int niveau_quantification);
 
-/* à coder */
-Image quantifier_image(Image image);
+/* Retourne la matrice des pixels quantifiés */
+int** quantifier_image(Image image);
 
 /* à coder */
 Histogramme histogramme_image(Image image);
@@ -37,6 +37,9 @@ Couleur trouver_couleur_objet(Histogramme hist);
 
 /* à coder */
 Couleur pixel_vers_couleur(int pixel[3], int seuil);
+
+int get_largeur(Image image);
+int get_hauteur(Image image);
 
 /* Convertit un nombre décimal en binaire (sur 8 bits) */
 char* decimal_en_binaire(int decimal);
