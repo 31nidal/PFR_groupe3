@@ -5,7 +5,7 @@
 #define HAUTEUR_MAX 300
 
 typedef struct Image * Image;
-typedef struct Histogramme * Histogramme;
+typedef int* Histogramme;
 typedef enum Couleur * Couleur;
 
 /* Initialise une image (allocation mémoire) */
@@ -29,7 +29,7 @@ int quantifier_pixel(int pixel[3], int niveau_quantification);
 /* Retourne la matrice des pixels quantifiés */
 int** quantifier_image(Image image);
 
-/* à coder */
+/* Retourne un tableau contenant l'histogramme d'une image passée en paramètre */
 Histogramme histogramme_image(Image image);
 
 /* à coder */

@@ -12,12 +12,6 @@ struct Image {
     int mat_bleu[LARGEUR_MAX][HAUTEUR_MAX];
 };
 
-struct Histogramme {
-    int tab_rouge[256];
-    int tab_vert[256];
-    int tab_bleu[256];
-}; 
-
 enum Couleur {ROUGE, VERT, BLEU, JAUNE};
 
 
@@ -172,6 +166,31 @@ int get_largeur(Image image) {
 int get_hauteur(Image image) {
     return image->hauteur;
 }
+
+Histogramme histogramme_image(Image image) {
+    int** matrice = quantifier_image(image);   /* récupère la matrice quantifiée */
+
+    int indice;
+    int seuil = 2;   /* à remplacer avec la lecture du vrai seuil */
+    int taille = (int) pow(2, 3*seuil);
+    /* tableau avec une taille de 2^(3*seuil) : 64, 512, 4096... */
+    int* tab = (int*) malloc(taille*sizeof(int));
+
+    for (int i=0; i<taille ; i++) {
+        tab[i] = 0;
+    }
+
+    for (int i=0 ; i<image->largeur ; i++) {
+        for (int j=0 ; j<image->hauteur; j++) {
+            indice = matrice[i][j];
+            tab[indice]++;
+        }
+    }
+
+    return tab;
+}
+
+
 
 /* =========== à déplacer =========== */
 
