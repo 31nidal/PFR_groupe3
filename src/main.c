@@ -1,7 +1,13 @@
 #include <stdio.h>
+#include "commande_vocale.h"
 
-int main()
+int main(void)
 {
-  printf("Hello World!\n");
-  return 0;
+    char commande[256];
+
+    if (lire_commande(commande, 256)) {
+        traiter_commande(commande);
+    }
+
+    return 0;
 }
