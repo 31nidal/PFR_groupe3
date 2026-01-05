@@ -1,3 +1,13 @@
-__pycache__/
-*.pyc
-python/tmp
+# Binaires
+bin/*.out
+
+# Objets compilés
+lib/*.o
+
+# Fichiers temporaires
+commande.txt
+python/temp.wav
+python/rep.mp3
+
+# macOS
+.DS_Store
