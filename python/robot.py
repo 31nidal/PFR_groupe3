@@ -17,39 +17,58 @@ class Robot:
 		self.t.setheading(initial_heading) # 0=EST, 90=NORT
 		self.t.pendown()
 
+		# Dictionnaire de messages (sera rempli par simulation.py)
+		self.messages = {}
+
 	def avancer(self, distance):
 		"""Déplace le robot vers l'avant et logue l'action."""
-		# AJOUT DE LA TRAÇABILITÉ
-		print(f"[TRACE] Robot avance de {distance} metres.")
+		prefixe = self.messages.get('prefixe', '[TRACE]')
+		action = self.messages.get('avancer', 'avance')
+		unite = self.messages.get('unite_distance', 'metres')
+		print(f"{prefixe} Robot {action} de {distance} {unite}.")
 		self.t.forward(distance)
 
 	def reculer(self, distance):
 		"""Déplace le robot vers l'arrière et logue l'action."""
-		# AJOUT DE LA TRAÇABILITÉ
-		print(f"[TRACE] Robot recule de {distance} metres.")
+		prefixe = self.messages.get('prefixe', '[TRACE]')
+		action = self.messages.get('reculer', 'recule')
+		unite = self.messages.get('unite_distance', 'metres')
+		print(f"{prefixe} Robot {action} de {distance} {unite}.")
 		self.t.backward(distance)
 
 	def tourner_droite(self, angle):
-		print(f"[TRACE] Robot tourne à droite de {angle} degres.")
+		prefixe = self.messages.get('prefixe', '[TRACE]')
+		action = self.messages.get('tourner_droite', 'tourne a droite')
+		unite = self.messages.get('unite_angle', 'degres')
+		print(f"{prefixe} Robot {action} de {angle} {unite}.")
 		self.t.right(angle)
 
 	def tourner_gauche(self, angle):
-		print(f"[TRACE] Robot tourne à gauche de {angle} degres.")
+		prefixe = self.messages.get('prefixe', '[TRACE]')
+		action = self.messages.get('tourner_gauche', 'tourne a gauche')
+		unite = self.messages.get('unite_angle', 'degres')
+		print(f"{prefixe} Robot {action} de {angle} {unite}.")
 		self.t.left(angle)
 
 	def stop(self):
 		"""Lève le crayon (mode sans traçage)."""
-		print(f"[TRACE] Robot arrête de tracer (penup).")
+		prefixe = self.messages.get('prefixe', '[TRACE]')
+		# Note : Ajoute 'stop_trace' dans tes JSON pour traduire ce message
+		print(f"{prefixe} Robot arrete de tracer (penup).")
 		self.t.penup()
 
 	def start(self):
 		"""Abaisse le crayon (mode traçage)."""
-		print(f"[TRACE] Robot commence à tracer (pendown).")
+		prefixe = self.messages.get('prefixe', '[TRACE]')
+		# Note : Ajoute 'start_trace' dans tes JSON pour traduire ce message
+		print(f"{prefixe} Robot commence a tracer (pendown).")
 		self.t.pendown()
 
 	def aller_a(self, x, y):
 		"""Déplace le robot directement aux coordonnées (x,y)"""
-		print(f"[TRACE] Robot se déplace à la position absolue ({x}, {y}).")
+		prefixe = self.messages.get('prefixe', '[TRACE]')
+		action = self.messages.get('aller_a', 'se deplace a la position absolue')
+		print(f"{prefixe} Robot {action} ({x}, {y}).")
 		self.t.penup()
 		self.t.goto(x, y)
 		self.t.pendown()

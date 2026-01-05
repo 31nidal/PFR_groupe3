@@ -80,28 +80,43 @@ def cas_4_gestion_erreur_obstacle(robot: Robot):
 	print(" FIN CAS 4 \n")
 
 
-#  EXÉCUTION PRINCIPALE
+# EXÉCUTION PRINCIPALE
 if __name__ == "__main__":
-	screen = setup_simulation_screen()
+    import json  # Importation nécessaire pour lire le fichier
 
-	# Créez une instance du Robot
-	mon_robot = Robot(vitesse=2) # Ajustez la vitesse pour l'animation
+    # 1. Chargement de la configuration
+    with open('config.json', 'r', encoding='utf-8') as f:
+        config = json.load(f)
 
-	# Exécutez les cas de déplacement un par un
-	cas_1_ligne_droite(mon_robot)
+    # 2. Extraction des réglages du JSON
+    vitesse_config = config['robot_mouvement']['vitesse_defaut']
+    couleur_config = config['robot_mouvement']['couleur_defaut']
 
-	# On laisse le temps de voir la fin du cas 1 avant de passer au cas 2
-	turtle.time.sleep(1) 
+    # Chargement du fichier de langue
+    langue = config['parametres_generaux']['langue_actuelle']
+    with open(f'{langue}.json', 'r', encoding='utf-8') as f_lang:
+        textes = json.load(f_lang)
 
-	cas_2_parcours_carre(mon_robot)
+    # 3. Initialisation
+    screen = setup_simulation_screen()
 
-	turtle.time.sleep(1)
+    # Utilisation des variables du JSON pour créer le robot
+    mon_robot = Robot(vitesse=vitesse_config, couleur=couleur_config)
+    mon_robot.messages = textes['messages']
 
-	cas_3_atteindre_cible(mon_robot, 150, -150)
+    # Petit message de bienvenue venant du fichier de langue
+    print(textes['messages']['confirmation'])
 
-	turtle.time.sleep(1)
+    # 4. Exécution des missions
+    cas_1_ligne_droite(mon_robot)
+    turtle.time.sleep(1) 
 
-	cas_4_gestion_erreur_obstacle(mon_robot)
+    cas_2_parcours_carre(mon_robot)
+    turtle.time.sleep(1)
 
-	# Assurez-vous que la fenêtre reste ouverte jusqu'à ce que l'utilisateur la ferme
-	screen.mainloop()
+    cas_3_atteindre_cible(mon_robot, 150, -150)
+    turtle.time.sleep(1)
+
+    cas_4_gestion_erreur_obstacle(mon_robot)
+
+    screen.mainloop()
