@@ -80,6 +80,21 @@ void afficher_image_matrices(Image image) {
 }
 
 
+void afficher_image_binaire(int** img_bin, int largeur, int hauteur) {
+    printf("%d %d\n", largeur, hauteur);
+    for (int i = 0; i < largeur; i++) {
+        for (int j = 0; j < hauteur; j++) {
+            if (img_bin[i][j] == 1) {
+                printf("1 ");  /* Affiche 1 pour objet */
+            } else {
+                printf("0 ");  /* Affiche 0 pour fond */
+            }
+        }
+        printf("\n");
+    }
+}
+
+
 Image niveau_gris_image(Image image, int niveau_gris) {
     /* Vérification du niveau de gris */
     if ((niveau_gris < 1) || (niveau_gris > 255)) {
@@ -99,6 +114,47 @@ Image niveau_gris_image(Image image, int niveau_gris) {
         }
     }
     return image;
+}
+
+
+int** binariser_image(Image image, int seuil_saturation) {
+    /* Allocation de la matrice binaire */
+    int** img_bin = (int**) malloc(image->largeur * sizeof(int*));
+    for (int i = 0; i < image->largeur; i++) {
+        img_bin[i] = (int*) calloc(image->hauteur, sizeof(int));
+    }
+    
+    /* Parcours de tous les pixels de l'image */
+    for (int i = 0; i < image->largeur; i++) {
+        for (int j = 0; j < image->hauteur; j++) {
+            /* Récupération des composantes RGB du pixel */
+            int R = image->mat_rouge[i][j];
+            int G = image->mat_vert[i][j];
+            int B = image->mat_bleu[i][j];
+            
+            /* Calcul du maximum des 3 composantes */
+            int max = R;
+            if (G > max) { max = G; }
+            if (B > max) { max = B; }
+            
+            /* Calcul du minimum des 3 composantes */
+            int min = R;
+            if (G < min) { min = G; }
+            if (B < min) { min = B; }
+            
+            /* Calcul de la saturation */
+            int saturation = max - min;
+            
+            /* Binarisation selon le seuil */
+            if (saturation > seuil_saturation) {
+                img_bin[i][j] = 1;  /* Pixel coloré = objet */
+            } else {
+                img_bin[i][j] = 0;  /* Pixel neutre = fond */
+            }
+        }
+    }
+    
+    return img_bin;
 }
 
 
@@ -167,6 +223,7 @@ int get_hauteur(Image image) {
     return image->hauteur;
 }
 
+
 Histogramme histogramme_image(Image image) {
     int** matrice = quantifier_image(image);   /* récupère la matrice quantifiée */
 
@@ -176,10 +233,12 @@ Histogramme histogramme_image(Image image) {
     /* tableau avec une taille de 2^(3*seuil) : 64, 512, 4096... */
     int* tab = (int*) malloc(taille*sizeof(int));
 
+    /* remplit le tableau avec des 0 (initialisation) */
     for (int i=0; i<taille ; i++) {
         tab[i] = 0;
     }
 
+    /* calcul de l'histogramme */
     for (int i=0 ; i<image->largeur ; i++) {
         for (int j=0 ; j<image->hauteur; j++) {
             indice = matrice[i][j];
@@ -187,9 +246,14 @@ Histogramme histogramme_image(Image image) {
         }
     }
 
+    /* libération de la mémoire*/
+    for (int i=0 ; i<taille ; i++) {
+        free(matrice[i]);
+    }
+    free(matrice);
+
     return tab;
 }
-
 
 
 /* =========== à déplacer =========== */

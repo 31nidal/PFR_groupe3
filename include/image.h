@@ -20,10 +20,16 @@ void afficher_image_pixels(Image image);
 /* Affiche successivement les 3 matrices d'une image */
 void afficher_image_matrices(Image image);
 
+/* Affiche une image binaire (0 pour le fond, 1 pour l'objet) */
+void afficher_image_binaire(int** img_bin, int largeur, int hauteur);
+
 /* Transforme les 3 matrices d'une image pour les passer à un certain niveau de gris (passé en paramètre) */
 Image niveau_gris_image(Image image, int niveau_gris);
 
-/* Retourne la valeur décimal d'un pixel quantifié */
+/* Binarise une image selon la saturation des couleurs et renvoie la matrice binarisée */
+int** binariser_image(Image image, int seuil);
+
+/* Retourne la valeur décimal d'un pixel quantifié (moyenne: un pixel = (R+G+B)/3)*/
 int quantifier_pixel(int pixel[3], int niveau_quantification);
 
 /* Retourne la matrice des pixels quantifiés */
@@ -46,5 +52,11 @@ char* decimal_en_binaire(int decimal);
 
 /* Convertit un nombre binaire (sur 8 bits) en décimal  */
 int binaire_en_decimal(char* binaire);
+
+
+
+void afficher_image_binaire(int** img_bin, int largeur, int hauteur);
+
+
 
 #endif
