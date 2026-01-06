@@ -23,6 +23,9 @@ void afficher_image_matrices(Image image);
 /* Affiche une image binaire (0 pour le fond, 1 pour l'objet) */
 void afficher_image_binaire(int** img_bin, int largeur, int hauteur);
 
+/* Affiche la boîte englobante d'un objet sur une image binarisée */
+void afficher_image_boite_englobante(Image image, int delta);
+
 /* Transforme les 3 matrices d'une image pour les passer à un certain niveau de gris (passé en paramètre) */
 Image niveau_gris_image(Image image, int niveau_gris);
 
@@ -44,6 +47,7 @@ Couleur trouver_couleur_objet(Histogramme hist);
 /* à coder */
 Couleur pixel_vers_couleur(int pixel[3], int seuil);
 
+/* getteurs */
 int get_largeur(Image image);
 int get_hauteur(Image image);
 
@@ -52,11 +56,5 @@ char* decimal_en_binaire(int decimal);
 
 /* Convertit un nombre binaire (sur 8 bits) en décimal  */
 int binaire_en_decimal(char* binaire);
-
-
-
-void afficher_image_binaire(int** img_bin, int largeur, int hauteur);
-
-
 
 #endif

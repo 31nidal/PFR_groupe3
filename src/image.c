@@ -3,6 +3,7 @@
 #include <string.h>
 #include <math.h>
 #include "../include/image.h"
+#include "../include/forme.h"
 
 struct Image {
     int largeur;
@@ -84,14 +85,41 @@ void afficher_image_binaire(int** img_bin, int largeur, int hauteur) {
     printf("%d %d\n", largeur, hauteur);
     for (int i = 0; i < largeur; i++) {
         for (int j = 0; j < hauteur; j++) {
-            if (img_bin[i][j] == 1) {
-                printf("1 ");  /* Affiche 1 pour objet */
-            } else {
-                printf("0 ");  /* Affiche 0 pour fond */
-            }
+            printf("%d ", img_bin[i][j]);
         }
         printf("\n");
     }
+}
+
+
+void afficher_image_boite_englobante(Image image, int delta) {
+    /* Binarisation de l'image */
+    int** img_bin = binariser_image(image, 60);
+
+    /* Récupération des coordonnées des 'coins' de l'objet */
+    int* tab = trouver_coordonnees_forme(image);
+    
+    /* Initialisation des variables */
+    int i_min = tab[0] - delta;
+    int j_min = tab[1] - delta;
+    int i_max = tab[2] + delta;
+    int j_max = tab[3] + delta;
+
+    /* Test si le cadre n'est pas trop grand */
+    if ((i_min <= 0 || j_min <= 0 || i_max >= image->largeur || j_max >= image->hauteur)) fprintf(stderr, "Erreur: cadre trop grand.\n");
+
+    /* Délimite le cadre dans la matrice binaire */
+    for (int i=0 ; i<image->largeur ; i++) {
+        for (int j=0 ; j<image->hauteur ; j++) {
+            if ((i == i_min) && (j >= j_min) && (j <= j_max)) img_bin[i][j] = 7;    // côté supérieur
+            else if ((i == i_max) && (j >= j_min) && (j <= j_max)) img_bin[i][j] = 7;    // côté inférieur
+            else if ((j == j_min) && (i >= i_min) && (i <= i_max)) img_bin[i][j] = 7;    // côté gauche
+            else if ((j == j_max) && (i >= i_min) && (i <= i_max)) img_bin[i][j] = 7;    // côté gauche
+        }
+    }
+
+    /* Affichage de l'image binarisée avec la boîte englobante  */
+    afficher_image_binaire(img_bin, image->largeur, image->hauteur);
 }
 
 
