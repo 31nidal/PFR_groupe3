@@ -27,6 +27,15 @@ def envoyer_texte_au_C(texte):
     with open(FICHIER_COMMANDE, "w", encoding="utf-8") as f:
         f.write(texte)
 
+# transformation de la chaine en tokens 
+def normaliser_transcription(texte): 
+
+    chaine_tokenisee = texte.split()
+
+    print(chaine_tokenisee)
+
+    return chaine_tokenisee 
+
 # ---------------- MAIN ----------------
 def main():
     wav_file = record_audio()
@@ -46,6 +55,7 @@ def main():
         texte = ""
 
     if texte:
+        texte=normaliser_transcription(texte)
         envoyer_texte_au_C(texte)
         speech = gTTS("Commande envoyée.", lang="fr")
         speech.save("rep.mp3")
