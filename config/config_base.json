@@ -25,10 +25,10 @@
             "triangle"
         ],
 
-        "quantification_bits": 3,
+        "quantification_bits": 2,
 
         "tolerance_detection": {
-            "seuil_couleur": 20,
+            "seuil_couleur": 60,
             "seuil_forme": 15
         }
     },

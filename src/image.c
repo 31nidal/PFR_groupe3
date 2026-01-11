@@ -4,6 +4,7 @@
 #include <math.h>
 #include "../include/image.h"
 #include "../include/forme.h"
+#include "../include/config.h"
 
 struct Image {
     int largeur;
@@ -94,7 +95,7 @@ void afficher_image_binaire(int** img_bin, int largeur, int hauteur) {
 
 void afficher_image_boite_englobante(Image image, int delta) {
     /* Binarisation de l'image */
-    int** img_bin = binariser_image(image, 60);
+    int** img_bin = binariser_image(image);
 
     /* Récupération des coordonnées des 'coins' de l'objet */
     int* tab = trouver_coordonnees_forme(image);
@@ -123,6 +124,21 @@ void afficher_image_boite_englobante(Image image, int delta) {
 }
 
 
+
+void afficher_pourcentages_histogramme(Histogramme hist, int taille_image) {
+    int seuil_quantif = lire_valeur_json("quantification_bits", config_json);
+    int taille_hist = (int) pow(2, 3*seuil_quantif);
+    float valeur;
+
+    for (int i=0 ; i<taille_hist ; i++) {
+        if (hist[i] != 0) {
+            valeur = (hist[i]/ (float) taille_image) * 100;
+            printf("* %d -> %.2f%%\n", i, valeur);
+        }
+    }
+}
+
+
 Image niveau_gris_image(Image image, int niveau_gris) {
     /* Vérification du niveau de gris */
     if ((niveau_gris < 1) || (niveau_gris > 255)) {
@@ -145,7 +161,10 @@ Image niveau_gris_image(Image image, int niveau_gris) {
 }
 
 
-int** binariser_image(Image image, int seuil_saturation) {
+int** binariser_image(Image image) {
+    /* Charge le seuil de couleur (appellé dans ce contexte "seuil de saturation") depuis la config */
+    int seuil_saturation = lire_valeur_json("seuil_couleur", config_json);
+
     /* Allocation de la matrice binaire */
     int** img_bin = (int**) malloc(image->largeur * sizeof(int*));
     for (int i = 0; i < image->largeur; i++) {
@@ -162,13 +181,13 @@ int** binariser_image(Image image, int seuil_saturation) {
             
             /* Calcul du maximum des 3 composantes */
             int max = R;
-            if (G > max) { max = G; }
-            if (B > max) { max = B; }
+            if (G > max) max = G;
+            if (B > max) max = B;
             
             /* Calcul du minimum des 3 composantes */
             int min = R;
-            if (G < min) { min = G; }
-            if (B < min) { min = B; }
+            if (G < min) min = G;
+            if (B < min) min = B;
             
             /* Calcul de la saturation */
             int saturation = max - min;
@@ -186,8 +205,9 @@ int** binariser_image(Image image, int seuil_saturation) {
 }
 
 
-int quantifier_pixel(int pixel[3], int seuil_quantif) {
+int quantifier_pixel(int pixel[3]) {
     /* Initialisation de la chaîne quantifiée et autres variables */
+    int seuil_quantif = lire_valeur_json("quantification_bits", config_json);
     char bin_quantif[3*seuil_quantif+1];
     int dec_quantif, index = 0;
 
@@ -234,7 +254,7 @@ int** quantifier_image(Image image) {
             pixel[2] = image->mat_bleu[i][j];
 
             /* Ajout du pixel quantifié à la matrice */
-            mat_quantif[i][j] = quantifier_pixel(pixel, 2);
+            mat_quantif[i][j] = quantifier_pixel(pixel);
         } 
     }
 
@@ -252,12 +272,22 @@ int get_hauteur(Image image) {
 }
 
 
+void set_largeur(Image image, int new_largeur) {
+    image->largeur = new_largeur;
+}
+
+void set_hauteur(Image image, int new_hauteur) {
+    image->hauteur = new_hauteur;
+}
+
+
 Histogramme histogramme_image(Image image) {
     int** matrice = quantifier_image(image);   /* récupère la matrice quantifiée */
+    int seuil_quantif = lire_valeur_json("quantification_bits", config_json);   /* charge le nombre de bits pour la quantification */
 
     int indice;
-    int seuil = 2;   /* à remplacer avec la lecture du vrai seuil */
-    int taille = (int) pow(2, 3*seuil);
+    int taille = (int) pow(2, 3*seuil_quantif);
+
     /* tableau avec une taille de 2^(3*seuil) : 64, 512, 4096... */
     int* tab = (int*) malloc(taille*sizeof(int));
 
@@ -275,7 +305,7 @@ Histogramme histogramme_image(Image image) {
     }
 
     /* libération de la mémoire*/
-    for (int i=0 ; i<taille ; i++) {
+    for (int i=0 ; i<image->largeur ; i++) {
         free(matrice[i]);
     }
     free(matrice);

@@ -26,14 +26,17 @@ void afficher_image_binaire(int** img_bin, int largeur, int hauteur);
 /* Affiche la boîte englobante d'un objet sur une image binarisée */
 void afficher_image_boite_englobante(Image image, int delta);
 
+/* Affiche l'histogramme d'une image en pourcentages */
+void afficher_pourcentages_histogramme(Histogramme hist, int taille_image);
+
 /* Transforme les 3 matrices d'une image pour les passer à un certain niveau de gris (passé en paramètre) */
 Image niveau_gris_image(Image image, int niveau_gris);
 
 /* Binarise une image selon la saturation des couleurs et renvoie la matrice binarisée */
-int** binariser_image(Image image, int seuil);
+int** binariser_image(Image image);
 
 /* Retourne la valeur décimal d'un pixel quantifié (moyenne: un pixel = (R+G+B)/3)*/
-int quantifier_pixel(int pixel[3], int niveau_quantification);
+int quantifier_pixel(int pixel[3]);
 
 /* Retourne la matrice des pixels quantifiés */
 int** quantifier_image(Image image);
@@ -42,14 +45,15 @@ int** quantifier_image(Image image);
 Histogramme histogramme_image(Image image);
 
 /* à coder */
-Couleur trouver_couleur_objet(Histogramme hist);
-
-/* à coder */
 Couleur pixel_vers_couleur(int pixel[3], int seuil);
 
 /* getteurs */
 int get_largeur(Image image);
 int get_hauteur(Image image);
+
+/* setteurs */
+void set_largeur(Image image, int new_largeur);
+void set_hauteur(Image image, int new_hauteur);
 
 /* Convertit un nombre décimal en binaire (sur 8 bits) */
 char* decimal_en_binaire(int decimal);

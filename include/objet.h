@@ -9,7 +9,10 @@ typedef struct Objet * Objet;
 /* Initialise un objet (allocation mémoire) */
 Objet init_objet(Couleur couleur, Forme forme);
 
+/* Renvoie la sous-image centrée sur l'objet */
+Image sous_image_objet(Image image);
+
 /* à coder */
-Objet remplir_objet(void);
+Couleur trouver_couleur_objet(Histogramme histogramme);
 
 #endif

@@ -4,6 +4,7 @@
 #include <math.h>
 #include "../include/image.h"
 #include "../include/forme.h"
+#include "../include/config.h"
 
 struct Forme {
   char* nature;
@@ -36,7 +37,7 @@ int* trouver_coordonnees_forme(Image image) {
   int j_max = -1;
 
   /* Récupération de la matrice binarisée */
-  int** matrice_binarisee = binariser_image(image, 60);
+  int** matrice_binarisee = binariser_image(image);
 
   /* Calcul des coordonnées des "coins" de l'objet */
   for (int i=0 ; i<get_largeur(image); i++) {
