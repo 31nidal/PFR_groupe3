@@ -12,7 +12,7 @@ Forme init_forme(char* nature, int x_dep, int y_dep, int x_arr, int y_arr);
 char* trouver_nature_forme(Image image);
 
 /* Calcul les coordonnées du coin supérieur gauche et du coin inférieur droit de la boîte englobante d'un objet sur une image */
-int* trouver_coordonnees_forme(Image image);
+int* trouver_coordonnees_forme(Image image, int valeur_objet);
 
 /* getteurs */
 int get_x_dep(Forme forme);

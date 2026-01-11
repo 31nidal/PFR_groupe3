@@ -93,36 +93,46 @@ void afficher_image_binaire(int** img_bin, int largeur, int hauteur) {
 }
 
 
-void afficher_image_boite_englobante(Image image, int delta) {
-    /* Binarisation de l'image */
+void afficher_image_boites_englobantes(Image image, int delta) {
+    /* Binarisation et Labellisation de l'image */
     int** img_bin = binariser_image(image);
+    int** img_labelisee = labelliser_image_binaire(img_bin, image->largeur, image->hauteur);
 
-    /* Récupération des coordonnées des 'coins' de l'objet */
-    int* tab = trouver_coordonnees_forme(image);
-    
-    /* Initialisation des variables */
-    int i_min = tab[0] - delta;
-    int j_min = tab[1] - delta;
-    int i_max = tab[2] + delta;
-    int j_max = tab[3] + delta;
+    /* Trouve le nombre d'objets sur l'image */
+    int nb_objets = max_matrice(img_labelisee, image->largeur, image->hauteur);
 
-    /* Test si le cadre n'est pas trop grand */
-    if ((i_min <= 0 || j_min <= 0 || i_max >= image->largeur || j_max >= image->hauteur)) fprintf(stderr, "Erreur: cadre trop grand.\n");
+    /* Pour chaque objet */
+    for (int k=1 ; k<nb_objets+1 ; k++) {
 
-    /* Délimite le cadre dans la matrice binaire */
-    for (int i=0 ; i<image->largeur ; i++) {
-        for (int j=0 ; j<image->hauteur ; j++) {
-            if ((i == i_min) && (j >= j_min) && (j <= j_max)) img_bin[i][j] = 7;    // côté supérieur
-            else if ((i == i_max) && (j >= j_min) && (j <= j_max)) img_bin[i][j] = 7;    // côté inférieur
-            else if ((j == j_min) && (i >= i_min) && (i <= i_max)) img_bin[i][j] = 7;    // côté gauche
-            else if ((j == j_max) && (i >= i_min) && (i <= i_max)) img_bin[i][j] = 7;    // côté gauche
+        /* Récupération des coordonnées des 'coins' de l'objet */
+        int* tab = trouver_coordonnees_forme(image, k);
+        
+        /* Initialisation des variables */
+        int i_min = tab[0] - delta;
+        int j_min = tab[1] - delta;
+        int i_max = tab[2] + delta;
+        int j_max = tab[3] + delta;
+
+        /* Test si le cadre n'est pas trop grand */
+        if (i_min < 0) i_min = 0;
+        if (j_min < 0) j_min = 0;
+        if (i_max > image->largeur) i_max = image->largeur;
+        if (j_max > image->hauteur) j_max = image->hauteur;
+        
+        /* Délimite le cadre dans la matrice binaire */
+        for (int i=0 ; i<image->largeur ; i++) {
+            for (int j=0 ; j<image->hauteur ; j++) {
+                if ((i == i_min) && (j >= j_min) && (j <= j_max)) img_labelisee[i][j] = 7;    // côté supérieur
+                else if ((i == i_max) && (j >= j_min) && (j <= j_max)) img_labelisee[i][j] = 7;    // côté inférieur
+                else if ((j == j_min) && (i >= i_min) && (i <= i_max)) img_labelisee[i][j] = 7;    // côté gauche
+                else if ((j == j_max) && (i >= i_min) && (i <= i_max)) img_labelisee[i][j] = 7;    // côté gauche
+            }
         }
     }
 
-    /* Affichage de l'image binarisée avec la boîte englobante  */
-    afficher_image_binaire(img_bin, image->largeur, image->hauteur);
+    /* Affichage de l'image binarisée avec la (ou les) boîte englobante  */
+    afficher_image_binaire(img_labelisee, image->largeur, image->hauteur);
 }
-
 
 
 void afficher_pourcentages_histogramme(Histogramme hist, int taille_image) {
@@ -203,6 +213,100 @@ int** binariser_image(Image image) {
     
     return img_bin;
 }
+
+int** labelliser_image_binaire(int** img_bin, int largeur, int hauteur) {
+    /* Allocation et initialisation */
+    int** img_labelisee = (int**) malloc(largeur * sizeof(int*));
+    for (int i = 0; i < largeur; i++) {
+        img_labelisee[i] = (int*) calloc(hauteur, sizeof(int));
+    }
+    
+    int label_actuel = 1;
+    
+    /* PASS 1 : Labellisation provisoire*/
+    for (int i = 0; i < largeur; i++) {
+        for (int j = 0; j < hauteur; j++) {
+            /* Ignorer le fond */
+            if (img_bin[i][j] == 0) {
+                continue;
+            }
+            
+            /* Récupérer les labels des voisins déjà traités */
+            int label_haut = 0;
+            int label_gauche = 0;
+            
+            if (i > 0) {
+                label_haut = img_labelisee[i-1][j];
+            }
+            
+            if (j > 0) {
+                label_gauche = img_labelisee[i][j-1];
+            }
+            
+            /* CAS 1 : Aucun voisin → Nouveau label*/
+            if (label_haut == 0 && label_gauche == 0) {
+                label_actuel++;
+                img_labelisee[i][j] = label_actuel;
+            }
+            /* CAS 2 : Voisin haut seulement */
+            else if (label_haut != 0 && label_gauche == 0) {
+                img_labelisee[i][j] = label_haut;
+            }
+            /* CAS 3 : Voisin gauche seulement*/
+            else if (label_haut == 0 && label_gauche != 0) {
+                img_labelisee[i][j] = label_gauche;
+            }
+            /* CAS 4 : Les deux voisins*/
+            else {
+                /* Prendre le minimum des deux */
+                int min_label;
+                int max_label;
+                
+                if (label_haut < label_gauche) {
+                    min_label = label_haut;
+                    max_label = label_gauche;
+                } else {
+                    min_label = label_gauche;
+                    max_label = label_haut;
+                }
+                
+                img_labelisee[i][j] = min_label;
+                
+                /* Si différents, propager le minimum */
+                if (label_haut != label_gauche) {
+                    /* Remplacer tous les max_label par min_label */
+                    for (int ii = 0; ii <= i; ii++) {
+                        for (int jj = 0; jj < hauteur; jj++) {
+                            if (img_labelisee[ii][jj] == max_label) {
+                                img_labelisee[ii][jj] = min_label;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    /* PASS 2 : Renumérote pour avoir 1, 2, 3...*/
+    int correspondance[256] = {0};
+    int nouveau_label = 0;
+    
+    for (int i = 0; i < largeur; i++) {
+        for (int j = 0; j < hauteur; j++) {
+            int ancien = img_labelisee[i][j];
+            if (ancien > 0) {
+                if (correspondance[ancien] == 0) {
+                    nouveau_label++;
+                    correspondance[ancien] = nouveau_label;
+                }
+                img_labelisee[i][j] = correspondance[ancien];
+            }
+        }
+    }
+    
+    return img_labelisee;
+}
+
 
 
 int quantifier_pixel(int pixel[3]) {
@@ -346,4 +450,15 @@ int binaire_en_decimal(char* binaire) {
     }
     
     return decimal;
+}
+
+
+int max_matrice(int** matrice, int largeur, int hauteur) {
+    int max = matrice[0][0];
+    for (int i=0 ; i<largeur ; i++) {
+        for (int j=0 ; j<hauteur ; j++) {
+            if (matrice[i][j] > max) max = matrice[i][j];
+        }
+    }
+    return max;
 }

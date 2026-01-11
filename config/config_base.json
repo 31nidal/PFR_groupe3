@@ -28,7 +28,7 @@
         "quantification_bits": 2,
 
         "tolerance_detection": {
-            "seuil_couleur": 60,
+            "seuil_couleur": 56,
             "seuil_forme": 15
         }
     },

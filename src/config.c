@@ -6,7 +6,7 @@
 /* ========== VARIABLE GLOBALE ========== */
 char* config_json = NULL;
 
-/* ========== FONCTIONS UTILITAIRES (code du collègue) ========== */
+/* ========== FONCTIONS UTILITAIRES ========== */
 
 int est_espace(char c) {
     return (c == ' ' || c == '\n' || c == '\t' || c == '\r' || c == '\v' || c == '\f');
@@ -113,7 +113,6 @@ int charger_config(const char* fichier) {
         return 0;
     }
     
-    printf(" => Configuration chargée depuis %s\n", fichier);
     return 1;
 }
 

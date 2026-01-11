@@ -26,7 +26,7 @@ Forme init_forme(char* nature, int x_dep, int y_dep, int x_arr, int y_arr) {
 }
 
 
-int* trouver_coordonnees_forme(Image image) {
+int* trouver_coordonnees_forme(Image image, int valeur_objet) {
   /* Initialisation du tableau à retourner */
   int* tab = (int*) malloc(4*sizeof(int));
 
@@ -38,11 +38,12 @@ int* trouver_coordonnees_forme(Image image) {
 
   /* Récupération de la matrice binarisée */
   int** matrice_binarisee = binariser_image(image);
+  int** matrice_labellisee = labelliser_image_binaire(matrice_binarisee, get_largeur(image), get_hauteur(image));
 
   /* Calcul des coordonnées des "coins" de l'objet */
   for (int i=0 ; i<get_largeur(image); i++) {
     for (int j=0 ; j<get_hauteur(image) ; j++) {
-      if (matrice_binarisee[i][j]) {
+      if (matrice_labellisee[i][j] == valeur_objet) {
         if (i < i_min) { i_min = i; }
         else if (j < j_min) { j_min = j; }
         else if (i > i_max) { i_max = i; }

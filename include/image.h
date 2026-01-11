@@ -24,7 +24,7 @@ void afficher_image_matrices(Image image);
 void afficher_image_binaire(int** img_bin, int largeur, int hauteur);
 
 /* Affiche la boîte englobante d'un objet sur une image binarisée */
-void afficher_image_boite_englobante(Image image, int delta);
+void afficher_image_boites_englobantes(Image image, int delta);
 
 /* Affiche l'histogramme d'une image en pourcentages */
 void afficher_pourcentages_histogramme(Histogramme hist, int taille_image);
@@ -34,6 +34,9 @@ Image niveau_gris_image(Image image, int niveau_gris);
 
 /* Binarise une image selon la saturation des couleurs et renvoie la matrice binarisée */
 int** binariser_image(Image image);
+
+/* Labellise une image binaire -> Sépare chaque objet détecté  en utilisant un algorithme "Two Pass"*/
+int** labelliser_image_binaire(int** img_bin, int largeur, int hauteur);
 
 /* Retourne la valeur décimal d'un pixel quantifié (moyenne: un pixel = (R+G+B)/3)*/
 int quantifier_pixel(int pixel[3]);
@@ -60,5 +63,8 @@ char* decimal_en_binaire(int decimal);
 
 /* Convertit un nombre binaire (sur 8 bits) en décimal  */
 int binaire_en_decimal(char* binaire);
+
+/* Renvoie la valeur maximal d'une matrice */
+int max_matrice(int** matrice, int largeur, int hauteur);
 
 #endif
