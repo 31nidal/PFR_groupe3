@@ -1,15 +1,15 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
-
+#include <stdlib.h>
 #include "commande_vocale.h"
 
 #define FICHIER_COMMANDE "commande.txt"
 
 /* fichiers JSON contenant le vocabulaire */
-#define FR_JSON "../config/fr.json"
-#define EN_JSON "../config/en.json"
-#define ES_JSON "../config/es.json"
+#define FR_JSON "config/fr.json"
+#define EN_JSON "config/en.json"
+#define ES_JSON "config/es.json"
 
 #define TAILLE_MAX 4096
 #define TAILLE_CMD 512
@@ -39,6 +39,12 @@ int mot_inutile(const char *mot) {
     return 0;
 }
 
+void lancer_python() {
+    int res = system("python3 python/assistant_vocal.py");
+    if (res != 0) {
+        printf("[ERREUR] Python n'a pas pu s'exécuter !\n");
+    }
+}
 /* Lit la commande écrite par Python                 */
 int lire_commande(char *buffer, int taille) {
     FILE *f = fopen(FICHIER_COMMANDE, "r");

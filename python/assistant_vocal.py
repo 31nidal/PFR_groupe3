@@ -1,7 +1,7 @@
 import speech_recognition as sr
 from gtts import gTTS
 
-FICHIER_COMMANDE = "../commande.txt"
+FICHIER_COMMANDE = "commande.txt"
 LANGUE = "fr-FR"
 
 recognizer = sr.Recognizer()
