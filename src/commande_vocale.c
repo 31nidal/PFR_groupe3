@@ -13,8 +13,8 @@
 
 #define TAILLE_MAX 4096
 #define TAILLE_CMD 512
-
-/* Met toute la chaîne en minuscules (ASCII simple)  */
+ 
+/* Met toute la chaîne en minuscules */
 void mettre_en_minuscules(char *texte) {
     for (int i = 0; texte[i]; i++) {
         texte[i] = tolower((unsigned char)texte[i]);
@@ -39,12 +39,15 @@ int mot_inutile(const char *mot) {
     return 0;
 }
 
-void lancer_python() {
-    int res = system("python3 python/assistant_vocal.py");
+int lancer_python() {
+    int res = system("python python/assistant_vocal.py");
     if (res != 0) {
         printf("[ERREUR] Python n'a pas pu s'exécuter !\n");
+        return 0;
     }
+    return 1;
 }
+
 /* Lit la commande écrite par Python                 */
 int lire_commande(char *buffer, int taille) {
     FILE *f = fopen(FICHIER_COMMANDE, "r");
