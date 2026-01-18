@@ -24,6 +24,7 @@ DELAI_LECTURE = 0.1  # délai entre deux lectures de action.txt
 def lire_action():
     """Lit l'action envoyée par le programme C."""
     if not os.path.exists(FICHIER_ACTION):
+        print("fichier n'existe pas")
         return None
 
     with open(FICHIER_ACTION, "r") as f:
@@ -43,7 +44,7 @@ def appliquer_action(robot, action):
     Retourne False si la simulation doit s'arrêter.
     """
 
-    if action == "AVANCE":
+    if action == "avance":
         distance_restante = DISTANCE
         while distance_restante > 0:
             pas = min(PAS_DISTANCE, distance_restante)
@@ -51,7 +52,7 @@ def appliquer_action(robot, action):
             distance_restante -= pas
             time.sleep(DELAI_ANIM)
 
-    elif action == "GAUCHE":
+    elif action == "gauche":
         angle_restant = ANGLE
         while angle_restant > 0:
             pas = min(PAS_ANGLE, angle_restant)
@@ -59,7 +60,7 @@ def appliquer_action(robot, action):
             angle_restant -= pas
             time.sleep(DELAI_ANIM)
 
-    elif action == "DROITE":
+    elif action == "droite":
         angle_restant = ANGLE
         while angle_restant > 0:
             pas = min(PAS_ANGLE, angle_restant)
@@ -67,7 +68,7 @@ def appliquer_action(robot, action):
             angle_restant -= pas
             time.sleep(DELAI_ANIM)
 
-    elif action == "STOP":
+    elif action == "stop":
         print("[SIMULATION] Arrêt demandé")
         return False
 
@@ -80,14 +81,11 @@ def appliquer_action(robot, action):
 
 
 def main():
-    # Initialisation de la fenêtre Turtle (important pour macOS)
     screen = turtle.Screen()
     screen.title("Simulation Robot – Commande Vocale")
     screen.bgcolor("white")
 
-    # Création du robot (Turtle initialisé dans Robot.__init__)
     robot = Robot()
-
     print("[SIMULATION] En attente de commandes vocales...")
 
     en_cours = True
@@ -98,4 +96,11 @@ def main():
         if action:
             print(f"[SIMULATION] Action reçue : {action}")
             en_cours = appliquer_action(robot, action)
-            ef
+            effacer_action()   
+
+        time.sleep(DELAI_LECTURE)
+
+    turtle.exitonclick
+
+if __name__ == "__main__":
+    main()

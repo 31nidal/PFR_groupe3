@@ -5,6 +5,7 @@
 #include "commande_vocale.h"
 
 #define FICHIER_COMMANDE "commande.txt"
+#define FICHIER_ACTION "action.txt"
 
 /* fichiers JSON contenant le vocabulaire */
 #define FR_JSON "config/fr.json"
@@ -66,7 +67,7 @@ int lire_commande(char *buffer, int taille) {
     return 1;
 }
 
-/* Supprime les mots inutiles et garde l'essentiel   */
+/* Supprime les mots inutiles et garde l essentiel   */
 void filtrer_commande(const char *entree, char *sortie) {
     char tmp[TAILLE_CMD];
     strcpy(tmp, entree);
@@ -83,6 +84,18 @@ void filtrer_commande(const char *entree, char *sortie) {
     }
 
     printf("[TRACE] Commande filtree : %s\n", sortie);
+}
+
+/* Ecrit l action detectee dans le fichier action.txt */
+void ecrire_action(const char *action) {
+    FILE *f = fopen(FICHIER_ACTION, "w");
+    if (!f) {
+        printf("[ERREUR] Impossible d'ouvrir %s\n", FICHIER_ACTION);
+        return;
+    }
+
+    fprintf(f, "%s\n", action);
+    fclose(f);
 }
 
 /* Charge un fichier JSON complet dans une chaîne    */
@@ -112,25 +125,33 @@ int commande_presente_dans_json(const char *json, const char *commande) {
     return 0;
 }
 
-/* Associe les mots-clés aux actions du robot        */
 void executer_action(const char *cmd) {
 
     if (strstr(cmd, "avance") || strstr(cmd, "forward") || strstr(cmd, "avanza")) {
         printf("[ACTION] Robot avance\n");
+        ecrire_action("avance");
+        return;
     }
 
     if (strstr(cmd, "gauche") || strstr(cmd, "left") || strstr(cmd, "izquierda")) {
         printf("[ACTION] Robot tourne a gauche\n");
+        ecrire_action("gauche");
+        return;
     }
 
     if (strstr(cmd, "droite") || strstr(cmd, "right") || strstr(cmd, "derecha")) {
         printf("[ACTION] Robot tourne a droite\n");
+        ecrire_action("droite");
+        return;
     }
 
     if (strstr(cmd, "stop") || strstr(cmd, "arrete") || strstr(cmd, "para")) {
         printf("[ACTION] Robot stop\n");
+        ecrire_action("stop");
+        return;
     }
 }
+
 
 /* Fonction principale appelée par le main           */
 void traiter_commande(void) {
