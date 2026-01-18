@@ -10,9 +10,9 @@ typedef struct Objet * Objet;
 Objet init_objet(Couleur couleur, Forme forme);
 
 /* Renvoie la sous-image centrée sur l'objet */
-Image sous_image_objet(Image image);
+Image sous_image_objet(Image image, int valeur_objet, int delta);
 
 /* à coder */
-Couleur trouver_couleur_objet(Histogramme histogramme);
+Couleur trouver_couleur_objet(Image sous_image);
 
 #endif
