@@ -11,3 +11,6 @@ python/rep.mp3
 
 # macOS
 .DS_Store
+bin/
+python/__pycache__/
+*.mp3
