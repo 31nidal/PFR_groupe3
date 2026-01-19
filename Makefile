@@ -7,11 +7,7 @@ BIN = bin/prog_commande
 
 # Cible par défaut : compile ET lance tout
 all: $(BIN)
-	@echo "=== Lancement de la simulation ==="
-	python python/simulation.py & \
-	sleep 1 && \
-	echo "=== Lancement de la commande vocale ===" && \
-	./$(BIN)
+
 
 # Compilation
 $(BIN): $(SRC)

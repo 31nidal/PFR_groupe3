@@ -3,5 +3,5 @@
 
 int lancer_python(void);
 void traiter_commande(void);
-
+int lancer_simulation(void);
 #endif

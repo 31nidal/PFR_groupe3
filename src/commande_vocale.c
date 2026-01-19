@@ -14,11 +14,19 @@
 
 #define TAILLE_MAX 4096
 #define TAILLE_CMD 512
- 
 /* Met toute la chaîne en minuscules */
 void mettre_en_minuscules(char *texte) {
     for (int i = 0; texte[i]; i++) {
         texte[i] = tolower((unsigned char)texte[i]);
+    }
+}
+
+void effacer_commande(void)
+{
+    FILE *f = fopen(FICHIER_COMMANDE, "w");
+    if (f != NULL)
+    {
+        fclose(f);
     }
 }
 
@@ -49,6 +57,15 @@ int lancer_python() {
     return 1;
 }
 
+int lancer_simulation() {
+    int res = system("python python/simulation.py");
+    if (res != 0) {
+        printf("[ERREUR] simulation n'a pas pu s'exécuter !\n");
+        return 0;
+    }
+    return 1;
+}
+
 /* Lit la commande écrite par Python                 */
 int lire_commande(char *buffer, int taille) {
     FILE *f = fopen(FICHIER_COMMANDE, "r");
@@ -62,7 +79,7 @@ int lire_commande(char *buffer, int taille) {
 
     buffer[strcspn(buffer, "\n")] = '\0';
     mettre_en_minuscules(buffer);
-
+    
     printf("[TRACE] Commande recue : %s\n", buffer);
     return 1;
 }
@@ -79,10 +96,11 @@ void filtrer_commande(const char *entree, char *sortie) {
         if (!mot_inutile(mot)) {
             strcat(sortie, mot);
             strcat(sortie, " ");
+            
         }
         mot = strtok(NULL, " ");
     }
-
+    
     printf("[TRACE] Commande filtree : %s\n", sortie);
 }
 
@@ -130,27 +148,32 @@ void executer_action(const char *cmd) {
     if (strstr(cmd, "avance") || strstr(cmd, "forward") || strstr(cmd, "avanza")) {
         printf("[ACTION] Robot avance\n");
         ecrire_action("avance");
+        lancer_simulation();
         return;
     }
 
     if (strstr(cmd, "gauche") || strstr(cmd, "left") || strstr(cmd, "izquierda")) {
         printf("[ACTION] Robot tourne a gauche\n");
         ecrire_action("gauche");
+        lancer_simulation();
         return;
     }
 
     if (strstr(cmd, "droite") || strstr(cmd, "right") || strstr(cmd, "derecha")) {
         printf("[ACTION] Robot tourne a droite\n");
         ecrire_action("droite");
+        lancer_simulation();
         return;
     }
 
     if (strstr(cmd, "stop") || strstr(cmd, "arrete") || strstr(cmd, "para")) {
         printf("[ACTION] Robot stop\n");
         ecrire_action("stop");
+        lancer_simulation();
         return;
     }
 }
+
 
 
 /* Fonction principale appelée par le main           */
@@ -158,10 +181,12 @@ void traiter_commande(void) {
     char brute[TAILLE_CMD];
     char filtre[TAILLE_CMD];
     char json[TAILLE_MAX];
-
-    if (!lire_commande(brute, TAILLE_CMD))
+    lancer_python();
+    int commande_présente= lire_commande(brute, TAILLE_CMD);
+    if (!commande_présente)
         return;
-
+    else
+    effacer_commande();
     filtrer_commande(brute, filtre);
 
 
