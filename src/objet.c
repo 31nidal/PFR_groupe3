@@ -81,7 +81,6 @@ Couleur trouver_couleur_objet(Image sous_image) {
   /* Calcul de l'histogramme */
   Histogramme hist = histogramme_image(sous_image);
   
-  
 
   /* ===== ETAPE 1 : Trouver la valeur la plus fréquente ===== */
   int indice_max = 0;
@@ -94,6 +93,7 @@ Couleur trouver_couleur_objet(Image sous_image) {
     }
   }
 
+  
   /* ===== ETAPE 2 : Décoder en R, V, B ===== */
   int masque = (1 << seuil_quantif) - 1;
     
@@ -101,9 +101,9 @@ Couleur trouver_couleur_objet(Image sous_image) {
   int V = (indice_max >> seuil_quantif) & masque;
   int B = indice_max & masque;
 
-  printf("[TRACE] indice_max = %d\n", indice_max);
-  printf("[TRACE] masque = %d\n", masque);
-  printf("[TRACE] R = %d, V = %d, B = %d\n", R, V, B);
+  // printf("[TRACE] indice_max = %d\n", indice_max);
+  // printf("[TRACE] masque = %d\n", masque);
+  // printf("[TRACE] R = %d, V = %d, B = %d\n", R, V, B);
 
   
   /* ===== ETAPE 3 : Classifier la couleur ===== */
@@ -111,7 +111,7 @@ Couleur trouver_couleur_objet(Image sous_image) {
   int seuil_fort = valeur_max * 2 / 3;  /* Environ 2/3 du max */
 
   // printf("[TRACE] valeur_max = %d\n", valeur_max);
-  printf("[TRACE] seuil_fort = %d\n", seuil_fort);
+  // printf("[TRACE] seuil_fort = %d\n", seuil_fort);
   
   Couleur couleur_objet;
   int tolerance_jaune = valeur_max / 6;

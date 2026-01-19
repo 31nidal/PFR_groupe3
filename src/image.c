@@ -186,7 +186,7 @@ Image niveau_gris_image(Image image, int niveau_gris) {
 
 int** binariser_image(Image image) {
     /* Charge le seuil de couleur (appellé dans ce contexte "seuil de saturation") depuis la config */
-    int seuil_saturation = lire_valeur_json("seuil_couleur", config_json);
+    int seuil_saturation = lire_valeur_json("seuil_binarisation", config_json);
 
     /* Allocation de la matrice binaire */
     int** img_bin = (int**) malloc(image->largeur * sizeof(int*));
