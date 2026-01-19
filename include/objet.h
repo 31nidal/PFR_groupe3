@@ -12,7 +12,7 @@ Objet init_objet(Couleur couleur, Forme forme);
 /* Renvoie la sous-image centrée sur l'objet */
 Image sous_image_objet(Image image, int valeur_objet, int delta);
 
-/* à coder */
+/* Trouve la couleur d'un objet */
 Couleur trouver_couleur_objet(Image sous_image);
 
 #endif

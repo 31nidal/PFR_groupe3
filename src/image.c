@@ -14,8 +14,6 @@ struct Image {
     int** mat_bleu;
 };
 
-enum Couleur {ROUGE, VERT, BLEU, JAUNE};
-
 
 Image init_image(int largeur_image, int hauteur_image) {
     Image image = malloc(sizeof(struct Image));
@@ -145,7 +143,7 @@ void afficher_image_boites_englobantes(Image image, int delta) {
         }
     }
 
-    /* Affichage de l'image binarisée avec la (ou les) boîte englobante  */
+    /* Affichage de l'image binarisée avec la (ou les) boîte(s) englobante(s)  */
     afficher_image_binaire(img_labelisee, image->largeur, image->hauteur);
 }
 
@@ -199,6 +197,7 @@ int** binariser_image(Image image) {
     /* Parcours de tous les pixels de l'image */
     for (int i = 0; i < image->largeur; i++) {
         for (int j = 0; j < image->hauteur; j++) {
+
             /* Récupération des composantes RGB du pixel */
             int R = image->mat_rouge[i][j];
             int G = image->mat_vert[i][j];

@@ -6,7 +6,16 @@
 
 typedef struct Image * Image;
 typedef int* Histogramme;
-typedef enum Couleur * Couleur;
+typedef enum Couleur Couleur;
+
+enum Couleur {
+  ROUGE,
+  VERT,
+  BLEU,
+  JAUNE,
+  GRIS
+};
+
 
 /* Initialise une image (allocation mémoire) */
 Image init_image(int largeur_image, int hauteur);

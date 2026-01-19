@@ -71,3 +71,84 @@ Image sous_image_objet(Image image, int valeur_objet, int delta) {
   /* Retourne la sous-image */
   return sous_image;
 }
+
+
+Couleur trouver_couleur_objet(Image sous_image) {
+  /* Chargement du nombre de bits de quantification */
+  int seuil_quantif = lire_valeur_json("quantification_bits", config_json);
+  int taille_hist = (int) pow(2, 3 * seuil_quantif);
+  
+  /* Calcul de l'histogramme */
+  Histogramme hist = histogramme_image(sous_image);
+  
+  
+
+  /* ===== ETAPE 1 : Trouver la valeur la plus fréquente ===== */
+  int indice_max = 0;
+  int freq_max = hist[0];
+  
+  for (int i = 1 ; i<taille_hist ; i++) {
+    if (hist[i] > freq_max) {
+      freq_max = hist[i];
+      indice_max = i;
+    }
+  }
+
+  /* ===== ETAPE 2 : Décoder en R, V, B ===== */
+  int masque = (1 << seuil_quantif) - 1;
+    
+  int R = (indice_max >> (2 * seuil_quantif)) & masque;
+  int V = (indice_max >> seuil_quantif) & masque;
+  int B = indice_max & masque;
+
+  printf("[TRACE] indice_max = %d\n", indice_max);
+  printf("[TRACE] masque = %d\n", masque);
+  printf("[TRACE] R = %d, V = %d, B = %d\n", R, V, B);
+
+  
+  /* ===== ETAPE 3 : Classifier la couleur ===== */
+  int valeur_max = (int) pow(2, seuil_quantif) - 1;
+  int seuil_fort = valeur_max * 2 / 3;  /* Environ 2/3 du max */
+
+  // printf("[TRACE] valeur_max = %d\n", valeur_max);
+  printf("[TRACE] seuil_fort = %d\n", seuil_fort);
+  
+  Couleur couleur_objet;
+  int tolerance_jaune = valeur_max / 6;
+  
+  /* ROUGE : R fort, V et B faibles */
+  if (R >= seuil_fort && V < seuil_fort && B < seuil_fort) {
+    couleur_objet = ROUGE;
+  }
+  /* VERT : V fort, R et B faibles */
+  else if (V >= seuil_fort && R < seuil_fort && B < seuil_fort) {
+    couleur_objet = VERT;
+  }
+  /* BLEU : B fort, R et V faibles */
+  else if (B >= seuil_fort && R < seuil_fort && V < seuil_fort) {
+    couleur_objet = BLEU;
+  }
+  /* JAUNE : R et V forts, B faible */
+  else if (R >= seuil_fort && V >= seuil_fort && B < seuil_fort) {
+    couleur_objet = JAUNE;
+  }
+  /* Cas indéterminé */
+  else {
+    /* Par défaut, vérifier le jaune sinon prendre la composante la plus forte */
+    if (R == V && abs(R - V) < tolerance_jaune && (B < (R+V)/4 || B < seuil_fort)) {
+      couleur_objet = JAUNE;
+    } else if (R >= V && R >= B) {
+      couleur_objet = ROUGE;
+    } else if (V >= R && V >= B) {
+      couleur_objet = VERT;
+    } else {
+      couleur_objet = BLEU;
+    }
+  }
+  
+  /* Libération */
+  free(hist);
+  
+  /* Retourne la couleur trouvée */
+  return couleur_objet;
+}

@@ -10,20 +10,32 @@ int main() {
     if (!charger_config("config/config_base.json")) {
         return 1;
     }
+    int seuil_quantif = lire_valeur_json("quantification_bits", config_json);
+    printf("\n --> Nombre de bits utilisés pour la quantification : %d\n", seuil_quantif);
     
-    /* Test d'une labellisation d'une sous-image */
+    /* Test caractéristiques des objets d'une image (localisation et couleur) */
     Image image1 = lire_image();
     Image sous_image;
-    int** mat_bin;
+    Couleur couleur_objet;
+    int* tab_coord;
     int nb_objets = nombre_objets_image(image1);
+    // afficher_image_boites_englobantes(image1, 5);
 
     for (int i=1 ; i<nb_objets+1 ; i++) {
-        printf("\n===== Objet %d =====\n\n", i);
+        printf("\n===== Objet %d =====\n", i);
+        tab_coord = trouver_coordonnees_forme(image1, i);
+        printf("Coordonnées de l'objet : de (%d, %d) à (%d, %d)\n", tab_coord[0], tab_coord[1], tab_coord[2], tab_coord[3]);
         sous_image = sous_image_objet(image1, i, 3);
-        mat_bin = binariser_image(sous_image);
-        afficher_image_binaire(mat_bin, get_largeur(sous_image), get_hauteur(sous_image));
-        printf("\n\n");
+        // afficher_image_boites_englobantes(sous_image, 2);
+        couleur_objet = trouver_couleur_objet(sous_image);
+        if (couleur_objet == ROUGE) printf("Couleur : ROUGE\n");
+        else if (couleur_objet == VERT) printf("Couleur : VERT\n");
+        else if (couleur_objet == BLEU) printf("Couleur : BLEU\n");
+        else if (couleur_objet == JAUNE) printf("Couleur : JAUNE\n");
+        else if (couleur_objet == GRIS) printf("Couleur indéterminée\n");
     }
+
+    if (nb_objets ==0) printf("Aucun objet identifié sur l'image.\n");
     
     /* Libération */    
     liberer_config();
