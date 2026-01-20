@@ -56,8 +56,8 @@ int mot_inutile(const char *mot) {
         if (!charger_json(fichiers[i], json))
             continue;
 
-        /* On cherche la section mots_inutiles */
-        char *section = strstr(json, "\"commandes\"");
+        /* il cherche la section commands */
+        char *section = strstr(json, "\"commands\"");
         if (!section)
             continue;
 
