@@ -20,7 +20,17 @@ void mettre_en_minuscules(char *texte) {
         texte[i] = tolower((unsigned char)texte[i]);
     }
 }
+/* Charge un fichier JSON complet dans une chaîne    */
+int charger_json(const char *chemin, char *contenu) {
+    FILE *f = fopen(chemin, "r");
+    if (!f) return 0;
 
+    int n = fread(contenu, 1, TAILLE_MAX - 1, f);
+    contenu[n] = '\0';
+    fclose(f);
+
+    return 1;
+}
 void effacer_commande(void)
 {
     FILE *f = fopen(FICHIER_COMMANDE, "w");
@@ -32,21 +42,36 @@ void effacer_commande(void)
 
 /* Vérifie si un mot est inutile*/
 int mot_inutile(const char *mot) {
-    const char *liste[] = {
-        "bonjour", "salut", "hello", "hola",
-        "tu", "vous", "peux", "please",
-        "de", "a", "et", "the", "and",
-        "le", "la", "les", "el", "los",
-        "si", "sil", "te",
+    char json[TAILLE_MAX];
+
+    /* On vérifie dans chaque langue */
+    const char *fichiers[] = {
+        FR_JSON,
+        EN_JSON,
+        ES_JSON,
         NULL
     };
 
-    for (int i = 0; liste[i]; i++) {
-        if (strcmp(mot, liste[i]) == 0)
-            return 1;
+    for (int i = 0; fichiers[i]; i++) {
+        if (!charger_json(fichiers[i], json))
+            continue;
+
+        /* On cherche la section mots_inutiles */
+        char *section = strstr(json, "\"commandes\"");
+        if (!section)
+            continue;
+
+        /* Construire "mot" avec guillemets */
+        char mot_json[64];
+        snprintf(mot_json, sizeof(mot_json), "\"%s\"", mot);
+        if (strstr(section, mot_json)) {
+            return 0;   /* mot inutile */
+        }
     }
-    return 0;
+
+    return 1;   /* mot utile */
 }
+
 
 int lancer_python() {
     int res = system("python python/assistant_vocal.py");
@@ -116,17 +141,7 @@ void ecrire_action(const char *action) {
     fclose(f);
 }
 
-/* Charge un fichier JSON complet dans une chaîne    */
-int charger_json(const char *chemin, char *contenu) {
-    FILE *f = fopen(chemin, "r");
-    if (!f) return 0;
 
-    int n = fread(contenu, 1, TAILLE_MAX - 1, f);
-    contenu[n] = '\0';
-    fclose(f);
-
-    return 1;
-}
 
 /* Vérifie si au moins un mot de la commande est présent dans le fichier json        */
 int commande_presente_dans_json(const char *json, const char *commande) {
