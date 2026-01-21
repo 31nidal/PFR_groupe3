@@ -18,3 +18,16 @@ python/__pycache__/
 venv/
 __pycache__/
 *.pyc
+# Binaires
+bin/
+*.out
+
+# Objets compilés
+*.o
+
+# Fichiers d'exécution
+lois.txt
+action.txt
+
+# Python
+__pycache__/
