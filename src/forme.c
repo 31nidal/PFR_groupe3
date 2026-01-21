@@ -65,7 +65,7 @@ int* trouver_coordonnees_forme(Image image, int valeur_objet) {
 char* trouver_nature_forme(Image image) {
   /* Charge la valeur du seuil pour la forme (cerlce) depuis la configuration */
   float seuil_forme = lire_valeur_json("seuil_forme", config_json) / (float) 100;
-  printf("[TRACE] seuil_forme = %.2f\n", seuil_forme);
+  // printf("[TRACE] seuil_forme = %.2f\n", seuil_forme);
 
   /* Initialisation des variables */
   char* nature_forme = "Autre";
@@ -89,9 +89,9 @@ char* trouver_nature_forme(Image image) {
   if (perimetre > 0) circularite = 4*PI*aire / (float) (perimetre*perimetre);
   else circularite = 0;
 
-  printf("[TRACE] perimetre = %d\n", perimetre);
-  printf("[TRACE] aire = %d\n", aire);
-  printf("[TRACE] circularite = %.2f\n", circularite);
+  // printf("[TRACE] perimetre = %d\n", perimetre);
+  // printf("[TRACE] aire = %d\n", aire);
+  // printf("[TRACE] circularite = %.2f\n", circularite);
 
   /* Détermination de la nature de l'forme (cercle ou pas) */
   if (circularite > seuil_forme && circularite < (1+seuil_forme)) {
