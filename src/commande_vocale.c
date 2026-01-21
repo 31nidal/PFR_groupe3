@@ -2,229 +2,253 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdlib.h>
+#include <dirent.h>
+
 #include "commande_vocale.h"
 
+/* ===================== CONFIG ===================== */
+
+#define CONFIG_DIR "config"
 #define FICHIER_COMMANDE "commande.txt"
-#define FICHIER_ACTION "action.txt"
+#define FICHIER_ACTION   "action.txt"
 
-/* fichiers JSON contenant le vocabulaire */
-#define FR_JSON "config/fr.json"
-#define EN_JSON "config/en.json"
-#define ES_JSON "config/es.json"
+#define MAX_JSON     8192
+#define MAX_CMD      512
+#define MAX_WORDS    64
+#define MAX_ACTIONS  32
 
-#define TAILLE_MAX 4096
-#define TAILLE_CMD 512
-/* Met toute la chaîne en minuscules */
-void mettre_en_minuscules(char *texte) {
-    for (int i = 0; texte[i]; i++) {
-        texte[i] = tolower((unsigned char)texte[i]);
-    }
+/* ===================== ACTIONS ABSTRAITES ===================== */
+
+typedef enum {
+    ACTION_ADVANCE,
+    ACTION_RETREAT,
+    ACTION_TURN_LEFT,
+    ACTION_TURN_RIGHT,
+    ACTION_STOP
+} ActionType;
+
+typedef struct {
+    ActionType actions[MAX_ACTIONS];
+    int count;
+} ActionQueue;
+
+/* ===================== UTILITAIRES ===================== */
+
+static void to_lower(char *s) {
+    for (int i = 0; s[i]; i++)
+        s[i] = tolower((unsigned char)s[i]);
 }
-/* Charge un fichier JSON complet dans une chaîne    */
-int charger_json(const char *chemin, char *contenu) {
-    FILE *f = fopen(chemin, "r");
+
+static int is_number(const char *s) {
+    if (!s[0]) return 0;
+    for (int i = 0; s[i]; i++)
+        if (!isdigit((unsigned char)s[i]))
+            return 0;
+    return 1;
+}
+
+static int load_file(const char *path, char *buffer) {
+    FILE *f = fopen(path, "r");
     if (!f) return 0;
-
-    int n = fread(contenu, 1, TAILLE_MAX - 1, f);
-    contenu[n] = '\0';
+    int n = fread(buffer, 1, MAX_JSON - 1, f);
+    buffer[n] = '\0';
     fclose(f);
-
-    return 1;
-}
-void effacer_commande(void)
-{
-    FILE *f = fopen(FICHIER_COMMANDE, "w");
-    if (f != NULL)
-    {
-        fclose(f);
-    }
-}
-
-/* Vérifie si un mot est inutile*/
-int mot_inutile(const char *mot) {
-    char json[TAILLE_MAX];
-
-    /* On vérifie dans chaque langue */
-    const char *fichiers[] = {
-        FR_JSON,
-        EN_JSON,
-        ES_JSON,
-        NULL
-    };
-
-    for (int i = 0; fichiers[i]; i++) {
-        if (!charger_json(fichiers[i], json))
-            continue;
-
-        /* il cherche la section commands */
-        char *section = strstr(json, "\"commands\"");
-        if (!section)
-            continue;
-
-        /* Construire "mot" avec guillemets */
-        char mot_json[64];
-        snprintf(mot_json, sizeof(mot_json), "\"%s\"", mot);
-        if (strstr(section, mot_json)) {
-            return 0;   /* mot inutile */
-        }
-    }
-
-    return 1;   /* mot utile */
-}
-
-
-int lancer_python() {
-    int res = system("python python/assistant_vocal.py");
-    if (res != 0) {
-        printf("[ERREUR] Python n'a pas pu s'exécuter !\n");
-        return 0;
-    }
     return 1;
 }
 
-int lancer_simulation() {
-    int res = system("python python/simulation.py");
-    if (res != 0) {
-        printf("[ERREUR] simulation n'a pas pu s'exécuter !\n");
-        return 0;
-    }
-    return 1;
+/* ===================== FILE D’ACTIONS =*/
+
+static void init_queue(ActionQueue *q) {
+    q->count = 0;
 }
 
-/* Lit la commande écrite par Python                 */
-int lire_commande(char *buffer, int taille) {
-    FILE *f = fopen(FICHIER_COMMANDE, "r");
-    if (!f) {
-        printf("[ERREUR] Impossible d'ouvrir %s\n", FICHIER_COMMANDE);
-        return 0;
-    }
-
-    fgets(buffer, taille, f);
-    fclose(f);
-
-    buffer[strcspn(buffer, "\n")] = '\0';
-    mettre_en_minuscules(buffer);
-    
-    printf("[TRACE] Commande recue : %s\n", buffer);
-    return 1;
+static void enqueue_action(ActionQueue *q, ActionType action) {
+    if (q->count < MAX_ACTIONS)
+        q->actions[q->count++] = action;
 }
 
-/* Supprime les mots inutiles et garde l essentiel   */
-void filtrer_commande(const char *entree, char *sortie) {
-    char tmp[TAILLE_CMD];
-    strcpy(tmp, entree);
+/* ===================== TOKENS → ACTIONS ===================== */
 
-    sortie[0] = '\0';
-
-    char *mot = strtok(tmp, " ");
-    while (mot) {
-        if (!mot_inutile(mot)) {
-            strcat(sortie, mot);
-            strcat(sortie, " ");
-            
-        }
-        mot = strtok(NULL, " ");
+static int token_to_action(const char *token, ActionType *action) {
+    if (!strcmp(token, "advance")) {
+        *action = ACTION_ADVANCE; return 1;
     }
-    
-    printf("[TRACE] Commande filtree : %s\n", sortie);
-}
-
-/* Ecrit l action detectee dans le fichier action.txt */
-void ecrire_action(const char *action) {
-    FILE *f = fopen(FICHIER_ACTION, "w");
-    if (!f) {
-        printf("[ERREUR] Impossible d'ouvrir %s\n", FICHIER_ACTION);
-        return;
+    if (!strcmp(token, "retreat")) {
+        *action = ACTION_RETREAT; return 1;
     }
-
-    fprintf(f, "%s\n", action);
-    fclose(f);
-}
-
-
-
-/* Vérifie si au moins un mot de la commande est présent dans le fichier json        */
-int commande_presente_dans_json(const char *json, const char *commande) {
-    char tmp[TAILLE_CMD];
-    strcpy(tmp, commande);
-
-    char *mot = strtok(tmp, " ");
-    while (mot) {
-        if (strstr(json, mot)) {
-            return 1;   /* mot trouvé dans le JSON */
-        }
-        mot = strtok(NULL, " ");
+    if (!strcmp(token, "left")) {
+        *action = ACTION_TURN_LEFT; return 1;
+    }
+    if (!strcmp(token, "right")) {
+        *action = ACTION_TURN_RIGHT; return 1;
+    }
+    if (!strcmp(token, "stop")) {
+        *action = ACTION_STOP; return 1;
     }
     return 0;
 }
 
-void executer_action(const char *cmd) {
+/* Recherche UNIQUEMENT dans commands{} */
 
-    if (strstr(cmd, "avance") || strstr(cmd, "forward") || strstr(cmd, "avanza")) {
-        printf("[ACTION] Robot avance\n");
-        ecrire_action("avance");
-        lancer_simulation();
-        return;
-    }
+static int find_token_in_json(const char *json,
+                              const char *expression,
+                              char *token) {
+    char *cmd = strstr(json, "\"commands\"");
+    if (!cmd) return 0;
 
-    if (strstr(cmd, "gauche") || strstr(cmd, "left") || strstr(cmd, "izquierda")) {
-        printf("[ACTION] Robot tourne a gauche\n");
-        ecrire_action("gauche");
-        lancer_simulation();
-        return;
-    }
+    cmd = strchr(cmd, '{');
+    if (!cmd) return 0;
+    cmd++;
 
-    if (strstr(cmd, "droite") || strstr(cmd, "right") || strstr(cmd, "derecha")) {
-        printf("[ACTION] Robot tourne a droite\n");
-        ecrire_action("droite");
-        lancer_simulation();
-        return;
-    }
+    char *p = cmd;
+    while (*p && *p != '}') {
+        if (*p != '"') {
+            p++;
+            continue;
+        }
 
-    if (strstr(cmd, "stop") || strstr(cmd, "arrete") || strstr(cmd, "para")) {
-        printf("[ACTION] Robot stop\n");
-        ecrire_action("stop");
-        lancer_simulation();
-        return;
+        char key[64];
+        sscanf(p + 1, "%63[^\"]", key);
+
+        char *list_start = strchr(p, '[');
+        if (!list_start) break;
+        char *list_end = strchr(list_start, ']');
+        if (!list_end) break;
+
+        char values[1024];
+        strncpy(values, list_start, list_end - list_start);
+        values[list_end - list_start] = '\0';
+
+        /* nombres */
+        if (is_number(expression) && strcmp(key, "distance") == 0) {
+            strcpy(token, "distance");
+            return 1;
+        }
+
+        char quoted[128];
+        snprintf(quoted, sizeof(quoted), "\"%s\"", expression);
+
+        if (strstr(values, quoted)) {
+            strcpy(token, key);
+            return 1;
+        }
+
+        p = list_end + 1;
     }
+    return 0;
 }
 
+/* ===================== SORTIE ABSTRAITE ===================== */
 
+static void output_action(ActionType action) {
+    FILE *f = fopen(FICHIER_ACTION, "a");
+    if (!f) return;
 
-/* Fonction principale appelée par le main           */
+    switch (action) {
+        case ACTION_ADVANCE:
+            fprintf(f, "advance ");
+            printf("[ACTION] advance\n");
+            break;
+        case ACTION_RETREAT:
+            fprintf(f, "retreat ");
+            printf("[ACTION] retreat\n");
+            break;
+        case ACTION_TURN_LEFT:
+            fprintf(f, "left ");
+            printf("[ACTION] left\n");
+            break;
+        case ACTION_TURN_RIGHT:
+            fprintf(f, "right ");
+            printf("[ACTION] right\n");
+            break;
+        case ACTION_STOP:
+            fprintf(f, "stop ");
+            printf("[ACTION] stop\n");
+            break;
+    }
+    fclose(f);
+}
+
+/* ===================== PIPELINE PRINCIPAL ===================== */
+
 void traiter_commande(void) {
-    char brute[TAILLE_CMD];
-    char filtre[TAILLE_CMD];
-    char json[TAILLE_MAX];
-    lancer_python();
-    int commande_présente= lire_commande(brute, TAILLE_CMD);
-    if (!commande_présente)
+    char phrase[MAX_CMD];
+    char json[MAX_JSON];
+
+    FILE *f = fopen(FICHIER_COMMANDE, "r");
+    if (!f) {
+        printf("[ERREUR] commande.txt introuvable\n");
         return;
-    else
-    effacer_commande();
-    filtrer_commande(brute, filtre);
+    }
+    fgets(phrase, MAX_CMD, f);
+    fclose(f);
 
+    phrase[strcspn(phrase, "\n")] = '\0';
+    to_lower(phrase);
 
-    if (charger_json(FR_JSON, json) &&
-        commande_presente_dans_json(json, filtre)) {
-        printf("[INFO] Langue detectee : francais\n");
-        executer_action(filtre);
+    printf("[TRACE] Phrase recue : %s\n", phrase);
+
+    /* découpage en mots */
+    char *words[MAX_WORDS];
+    int word_count = 0;
+
+    char *tok = strtok(phrase, " ");
+    while (tok && word_count < MAX_WORDS) {
+        words[word_count++] = tok;
+        tok = strtok(NULL, " ");
+    }
+
+    ActionQueue queue;
+    init_queue(&queue);
+
+    DIR *dir = opendir(CONFIG_DIR);
+    if (!dir) {
+        printf("[ERREUR] dossier config introuvable\n");
         return;
     }
 
-    if (charger_json(EN_JSON, json) &&
-        commande_presente_dans_json(json, filtre)) {
-        printf("[INFO] Langue detectee : anglais\n");
-        executer_action(filtre);
-        return;
-    }
+    /* Fenêtre glissante : 3 mots → 2 mots → 1 mot */
+    for (int i = 0; i < word_count; i++) {
+        int matched = 0;
 
-    if (charger_json(ES_JSON, json) &&
-        commande_presente_dans_json(json, filtre)) {
-        printf("[INFO] Langue detectee : espagnol\n");
-        executer_action(filtre);
-        return;
-    }
+        for (int size = 3; size >= 1 && !matched; size--) {
+            if (i + size > word_count) continue;
 
-    printf("[ERREUR] Commande non reconnue dans les fichiers JSON\n");
+            char expr[128] = "";
+            for (int k = 0; k < size; k++) {
+                strcat(expr, words[i + k]);
+                if (k < size - 1) strcat(expr, " ");
+            }
+
+            rewinddir(dir);
+            struct dirent *entry;
+
+            while ((entry = readdir(dir))) {
+                if (!strstr(entry->d_name, ".json")) continue;
+
+                char path[256];
+                snprintf(path, sizeof(path), "%s/%s", CONFIG_DIR, entry->d_name);
+                if (!load_file(path, json)) continue;
+
+                char token[64];
+                if (find_token_in_json(json, expr, token)) {
+                    printf("[TOKEN] \"%s\" -> %s\n", expr, token);
+
+                    ActionType action;
+                    if (token_to_action(token, &action)) {
+                        enqueue_action(&queue, action);
+                    }
+                    matched = 1;
+                    i += size - 1; /* sauter les mots consommés */
+                    break;
+                }
+            }
+        }
+    }
+    closedir(dir);
+
+    /* Exécution abstraite (ordre respecté) */
+    for (int i = 0; i < queue.count; i++) {
+        output_action(queue.actions[i]);
+    }
 }

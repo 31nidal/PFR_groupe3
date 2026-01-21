@@ -3,81 +3,85 @@ import math
 
 class Robot:
 
-	def __init__(self, start_x=0, start_y=0, initial_heading=0, couleur="blue", vitesse=1):
+    def __init__(self, start_x=0, start_y=0, initial_heading=0,
+                 couleur="blue", vitesse=3):
 
-		#initialisation de la tortue
-		self.t=turtle.Turtle()
-		self.t.shape("turtle")
-		self.t.speed(vitesse)
-		self.t.color(couleur)
+        # Initialisation de la tortue
+        self.t = turtle.Turtle()
+        self.t.shape("turtle")
+        self.t.speed(vitesse)
+        self.t.color(couleur)
 
-		#position initial
-		self.t.penup()
-		self.t.goto(start_x, start_y)
-		self.t.setheading(initial_heading) # 0=EST, 90=NORT
-		self.t.pendown()
+        # Position initiale
+        self.t.penup()
+        self.t.goto(start_x, start_y)
+        self.t.setheading(initial_heading)  # 0 = EST, 90 = NORD
+        self.t.pendown()
 
-		# Dictionnaire de messages (sera rempli par simulation.py)
-		self.messages = {}
+        # Dictionnaire de messages (optionnel, extensible)
+        self.messages = {}
 
-	def avancer(self, distance):
-		"""Déplace le robot vers l'avant et logue l'action."""
-		prefixe = self.messages.get('prefixe', '[TRACE]')
-		action = self.messages.get('avancer', 'avance')
-		unite = self.messages.get('unite_distance', 'metres')
-		print(f"{prefixe} Robot {action} de {distance} {unite}.")
-		self.t.forward(distance)
+    # ================= DEPLACEMENTS =================
 
-	def reculer(self, distance):
-		"""Déplace le robot vers l'arrière et logue l'action."""
-		prefixe = self.messages.get('prefixe', '[TRACE]')
-		action = self.messages.get('reculer', 'recule')
-		unite = self.messages.get('unite_distance', 'metres')
-		print(f"{prefixe} Robot {action} de {distance} {unite}.")
-		self.t.backward(distance)
+    def avancer(self, distance=50):
+        prefixe = self.messages.get('prefixe', '[TRACE]')
+        action = self.messages.get('avancer', 'avance')
+        unite = self.messages.get('unite_distance', 'metres')
+        print(f"{prefixe} Robot {action} de {distance} {unite}.")
+        self.t.forward(distance)
 
-	def tourner_droite(self, angle):
-		prefixe = self.messages.get('prefixe', '[TRACE]')
-		action = self.messages.get('tourner_droite', 'tourne a droite')
-		unite = self.messages.get('unite_angle', 'degres')
-		print(f"{prefixe} Robot {action} de {angle} {unite}.")
-		self.t.right(angle)
+    def reculer(self, distance=50):
+        prefixe = self.messages.get('prefixe', '[TRACE]')
+        action = self.messages.get('reculer', 'recule')
+        unite = self.messages.get('unite_distance', 'metres')
+        print(f"{prefixe} Robot {action} de {distance} {unite}.")
+        self.t.backward(distance)
 
-	def tourner_gauche(self, angle):
-		prefixe = self.messages.get('prefixe', '[TRACE]')
-		action = self.messages.get('tourner_gauche', 'tourne a gauche')
-		unite = self.messages.get('unite_angle', 'degres')
-		print(f"{prefixe} Robot {action} de {angle} {unite}.")
-		self.t.left(angle)
+    # ================= ROTATION GENERIQUE =================
 
-	def stop(self):
-		"""Lève le crayon (mode sans traçage)."""
-		prefixe = self.messages.get('prefixe', '[TRACE]')
-		# Note : Ajoute 'stop_trace' dans tes JSON pour traduire ce message
-		print(f"{prefixe} Robot arrete de tracer (penup).")
-		self.t.penup()
+    def tourner(self, angle=90, direction="right"):
+        prefixe = self.messages.get('prefixe', '[TRACE]')
+        action = self.messages.get('tourner', 'tourne')
+        unite = self.messages.get('unite_angle', 'degres')
 
-	def start(self):
-		"""Abaisse le crayon (mode traçage)."""
-		prefixe = self.messages.get('prefixe', '[TRACE]')
-		# Note : Ajoute 'start_trace' dans tes JSON pour traduire ce message
-		print(f"{prefixe} Robot commence a tracer (pendown).")
-		self.t.pendown()
+        if direction == "right":
+            print(f"{prefixe} Robot {action} de {angle} {unite} a droite.")
+            self.t.right(angle)
+        elif direction == "left":
+            print(f"{prefixe} Robot {action} de {angle} {unite} a gauche.")
+            self.t.left(angle)
 
-	def aller_a(self, x, y):
-		"""Déplace le robot directement aux coordonnées (x,y)"""
-		prefixe = self.messages.get('prefixe', '[TRACE]')
-		action = self.messages.get('aller_a', 'se deplace a la position absolue')
-		print(f"{prefixe} Robot {action} ({x}, {y}).")
-		self.t.penup()
-		self.t.goto(x, y)
-		self.t.pendown()
+    # ================= ADAPTATION COMMANDE VOCALE =================
 
-	def marquer_cible(self, taille=10, couleur="red"):
-		"""marque un point pour symboliser une cible ou un obstacle"""
-		self.t.dot(taille, couleur)
+    def tourner_gauche(self, angle=90):
+        self.tourner(angle, "left")
 
-	def ecrire_message(self, message):
-		"""Écrit un message sur l'écran de simulation."""
-		self.t.write(message, align="center", font=("Arial", 10, "normal"))
+    def tourner_droite(self, angle=90):
+        self.tourner(angle, "right")
 
+    # ================= AUTRES ACTIONS =================
+
+    def stop(self):
+        prefixe = self.messages.get('prefixe', '[TRACE]')
+        print(f"{prefixe} Robot arrete.")
+        self.t.penup()  # NE FERME PAS la fenêtre
+
+    def start(self):
+        prefixe = self.messages.get('prefixe', '[TRACE]')
+        print(f"{prefixe} Robot commence a tracer.")
+        self.t.pendown()
+
+    def aller_a(self, x, y):
+        prefixe = self.messages.get('prefixe', '[TRACE]')
+        action = self.messages.get('aller_a', 'se deplace a la position absolue')
+        print(f"{prefixe} Robot {action} ({x}, {y}).")
+        self.t.penup()
+        self.t.goto(x, y)
+        self.t.pendown()
+
+    def marquer_cible(self, taille=10, couleur="red"):
+        self.t.dot(taille, couleur)
+
+    def ecrire_message(self, message):
+        self.t.write(message, align="center",
+                     font=("Arial", 10, "normal"))

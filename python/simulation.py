@@ -1,12 +1,13 @@
 import turtle
 import time
-import os
 from robot import Robot   # classe Robot 
 
 # Configuration générale
 
 
+f= open("action.txt","r")
 FICHIER_ACTION = "action.txt"
+
 
 # Mouvement global (une action)
 DISTANCE = 80      # distance totale pour AVANCE
@@ -18,64 +19,122 @@ PAS_ANGLE = 5      # rotation par pas
 DELAI_ANIM = 0.02  # délai entre chaque pas (plus petit = plus rapide)
 
 DELAI_LECTURE = 0.1  # délai entre deux lectures de action.txt
+ACTIONS = {"advance", "retreat", "turn", "stop"}
+
+def decouper_commandes(mots):
+    mots = [m for m in mots if m != "link"]
+
+    commandes = []
+    courante = []
+
+    for mot in mots:
+        if mot in ACTIONS:
+            if courante:
+                commandes.append(courante)
+            courante = [mot]
+        else:
+            courante.append(mot)
+
+    if courante:
+        commandes.append(courante)
+
+    return commandes
+
+
 
 
 
 def lire_action():
     """Lit l'action envoyée par le programme C."""
-    if not os.path.exists(FICHIER_ACTION):
-        print("fichier n'existe pas")
-        return None
+    with open(FICHIER_ACTION, "r", encoding="utf-8") as f:
+        mots = f.read().split()
 
-    with open(FICHIER_ACTION, "r") as f:
-        action = f.read().strip()
-
-    return action if action else None
+    print(mots)
+    return mots
 
 
 def effacer_action():
     """Efface l'action après traitement."""
-    open(FICHIER_ACTION, "w").close()
+    open(FICHIER_ACTION, "r").close()
 
 
-def appliquer_action(robot, action):
-    """
-    Applique une action avec animation progressive.
-    Retourne False si la simulation doit s'arrêter.
-    """
-
-    if action == "avance":
-        distance_restante = DISTANCE
-        while distance_restante > 0:
-            pas = min(PAS_DISTANCE, distance_restante)
-            robot.avancer(pas)
-            distance_restante -= pas
-            time.sleep(DELAI_ANIM)
-
-    elif action == "gauche":
-        angle_restant = ANGLE
+def tourner(robot, mots):
+    """Gère l'action tourner avec direction et angle."""
+    direction = None
+    if "left" in mots or "gauche" in mots:
+        direction = "left"
+    elif "right" in mots or "droite" in mots:
+        direction = "right"
+    if direction:
+        angle = ANGLE
+        for word in mots:
+            if word.isdigit():
+                angle = int(word)
+                break
+        angle_restant = angle
         while angle_restant > 0:
             pas = min(PAS_ANGLE, angle_restant)
-            robot.tourner_gauche(pas)
+            robot.tourner(pas, direction)
             angle_restant -= pas
             time.sleep(DELAI_ANIM)
 
-    elif action == "droite":
-        angle_restant = ANGLE
-        while angle_restant > 0:
-            pas = min(PAS_ANGLE, angle_restant)
-            robot.tourner_droite(pas)
-            angle_restant -= pas
-            time.sleep(DELAI_ANIM)
 
-    elif action == "stop":
-        print("[SIMULATION] Arrêt demandé")
-        return False
+def appliquer_actions(mots, robot):
+    commandes = decouper_commandes(mots)
 
-    else:
-        print(f"[SIMULATION] Action inconnue : {action}")
+    for cmd in commandes:
+        action = cmd[0]
+        params = cmd[1:]
+
+        if action == "advance":
+            distance = DISTANCE
+
+            if params:
+                if params[0].isdigit():
+                    if len(params) >= 2 and params[1] == "meters":
+                        distance = int(params[0])
+                    else:
+                        print("[ERREUR] advance attend 'meters' après la distance")
+                        continue
+
+            robot.avancer(distance)
+
+
+
+
+        elif action == "retreat":
+            distance = DISTANCE
+            for p in params:
+                if p.isdigit():
+                    distance = int(p)
+                    break
+            robot.reculer(distance)
+
+        elif action == "turn":
+            direction = None
+            if "left" in params or "gauche" in params:
+                direction = "left"
+            elif "right" in params or "droite" in params:
+                direction = "right"
+
+            if direction:
+                angle = ANGLE
+                for p in params:
+                    if p.isdigit():
+                        angle = int(p)
+                        break
+                robot.tourner(angle, direction)
+
+        elif action == "stop":
+            print("[SIMULATION] Arrêt demandé")
+            return False
+
+        else:
+            print(f"[SIMULATION] Action inconnue : {action}")
 
     return True
+
+
 
 
 
@@ -95,12 +154,12 @@ def main():
 
         if action:
             print(f"[SIMULATION] Action reçue : {action}")
-            en_cours = appliquer_action(robot, action)
+            en_cours = appliquer_actions(action, robot)
             effacer_action()   
 
         time.sleep(DELAI_LECTURE)
 
-    turtle.exitonclick
+    turtle.exitonclick()
 
 if __name__ == "__main__":
     main()
