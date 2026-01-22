@@ -22,8 +22,8 @@ int main() {
     int nb_objets = nombre_objets_image(image1);
     char* nature_forme;
     char* direction_objet;
-    float distance_objet;
-    float angle_objet;
+    int distance_objet;
+    int angle_objet;
     // afficher_image_boites_englobantes(image1, 2);
 
     for (int i=1 ; i<nb_objets+1 ; i++) {
@@ -50,8 +50,8 @@ int main() {
         else printf("Forme : indéterminée\n");
 
         printf("Direction : %s\n", direction_objet);
-        printf("Distance : %.2f m\n", distance_objet);
-        printf("Angle : %.2f °\n", angle_objet);
+        printf("Distance : %d m\n", distance_objet);
+        printf("Angle : %d °\n", angle_objet);
     }
 
     if (nb_objets == 0) printf("Aucun objet identifié sur l'image.\n");

@@ -19,9 +19,9 @@ Couleur trouver_couleur_objet(Image sous_image);
 char* trouver_direction_objet(Image image, int valeur_objet);
 
 /* Trouve la distance réelle en mètre(approximation) entre la prise de la photo et un objet */
-float trouver_distance_objet(Image image, int valeur_objet);
+int trouver_distance_objet(Image image, int valeur_objet);
 
 /* Trouve l'angle réelle en dégré (approximation) entre la prise de la photo et un objet */
-float trouver_angle_objet(Image image, int valeur_objet);
+int trouver_angle_objet(Image image, int valeur_objet);
 
 #endif
