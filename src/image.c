@@ -3,7 +3,7 @@
 #include <string.h>
 #include <math.h>
 #include "../include/image.h"
-#include "../include/forme.h"
+#include "../include/objet.h"
 #include "../include/config.h"
 
 struct Image {
@@ -116,16 +116,17 @@ void afficher_image_boites_englobantes(Image image, int delta) {
 
     /* Pour chaque objet */
     for (int k=1 ; k<nb_objets+1 ; k++) {
+        /* Défini l'objet courant */
+        Objet objet_courant = init_objet(k);
 
         /* Récupération des coordonnées des 'coins' de l'objet */
-        int* tab = trouver_coordonnees_forme(image, k);
-        printf("[TRACE] min : (%d, %d), max : (%d, %d)\n", tab[0], tab[1], tab[2], tab[3]);
+        trouver_coordonnees_objet(objet_courant, image);
         
         /* Initialisation des variables */
-        int i_min = tab[0] - delta;
-        int j_min = tab[1] - delta;
-        int i_max = tab[2] + delta;
-        int j_max = tab[3] + delta;
+        int i_min = get_x_dep(objet_courant) - delta;
+        int j_min = get_y_dep(objet_courant) - delta;
+        int i_max = get_x_arr(objet_courant) + delta;
+        int j_max = get_y_arr(objet_courant) + delta;
 
         /* Test si le cadre n'est pas trop grand */
         if (i_min < 0) i_min = 0;
