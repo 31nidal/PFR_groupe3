@@ -8,7 +8,7 @@
 
 int main() {
     /* Charger la configuration */
-    if (!charger_config("config/config_base.json")) {
+    if (!charger_config("config/config.json")) {
         return 1;
     }
     int seuil_quantif = lire_valeur_json("quantification_bits", config_json);
@@ -21,7 +21,10 @@ int main() {
     int* tab_coord;
     int nb_objets = nombre_objets_image(image1);
     char* nature_forme;
-    // afficher_image_boites_englobantes(image1, 5);
+    char* direction_objet;
+    float distance_objet;
+    float angle_objet;
+    // afficher_image_boites_englobantes(image1, 2);
 
     for (int i=1 ; i<nb_objets+1 ; i++) {
         printf("\n===== Objet %d =====\n", i);
@@ -39,13 +42,22 @@ int main() {
         else if (couleur_objet == GRIS) printf("Couleur indéterminée\n");
         
         nature_forme = trouver_nature_forme(sous_image);
+        direction_objet = trouver_direction_objet(image1, i);
+        distance_objet = trouver_distance_objet(image1, i);
+        angle_objet = trouver_angle_objet(image1, i);
 
         if (strcmp(nature_forme, "Cercle") == 0) printf("Forme : Cercle\n");
         else printf("Forme : indéterminée\n");
+
+        printf("Direction : %s\n", direction_objet);
+        printf("Distance : %.2f m\n", distance_objet);
+        printf("Angle : %.2f °\n", angle_objet);
     }
 
     if (nb_objets == 0) printf("Aucun objet identifié sur l'image.\n");
     
+    // afficher_image_binaire(binariser_image(image1), get_largeur(image1), get_hauteur(image1));
+
     /* Libération */    
     liberer_config();
 

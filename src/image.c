@@ -119,6 +119,7 @@ void afficher_image_boites_englobantes(Image image, int delta) {
 
         /* Récupération des coordonnées des 'coins' de l'objet */
         int* tab = trouver_coordonnees_forme(image, k);
+        printf("[TRACE] min : (%d, %d), max : (%d, %d)\n", tab[0], tab[1], tab[2], tab[3]);
         
         /* Initialisation des variables */
         int i_min = tab[0] - delta;
@@ -187,6 +188,9 @@ Image niveau_gris_image(Image image, int niveau_gris) {
 int** binariser_image(Image image) {
     /* Charge le seuil de couleur (appellé dans ce contexte "seuil de saturation") depuis la config */
     int seuil_saturation = lire_valeur_json("seuil_binarisation", config_json);
+    int intensite_min_rouge = lire_valeur_json("intensite_min_rouge", config_json);
+    int intensite_min_vert = lire_valeur_json("intensite_min_vert", config_json);
+    int intensite_min_bleu = lire_valeur_json("intensite_min_bleu", config_json);
 
     /* Allocation de la matrice binaire */
     int** img_bin = (int**) malloc(image->largeur * sizeof(int*));
@@ -202,26 +206,30 @@ int** binariser_image(Image image) {
             int R = image->mat_rouge[i][j];
             int G = image->mat_vert[i][j];
             int B = image->mat_bleu[i][j];
-            
-            /* Calcul du maximum des 3 composantes */
-            int max = R;
-            if (G > max) max = G;
-            if (B > max) max = B;
-            
-            /* Calcul du minimum des 3 composantes */
-            int min = R;
-            if (G < min) min = G;
-            if (B < min) min = B;
-            
-            /* Calcul de la saturation */
-            int saturation = max - min;
-            
-            /* Binarisation selon le seuil */
-            if (saturation > seuil_saturation) {
-                img_bin[i][j] = 1;  /* Pixel coloré = objet */
+
+            if (R < intensite_min_rouge && G < intensite_min_vert && B < intensite_min_bleu) {
+                img_bin[i][j] = 0;
             } else {
-                img_bin[i][j] = 0;  /* Pixel neutre = fond */
-            }
+                /* Calcul du maximum des 3 composantes */
+                int max = R;
+                if (G > max) max = G;
+                if (B > max) max = B;
+                
+                /* Calcul du minimum des 3 composantes */
+                int min = R;
+                if (G < min) min = G;
+                if (B < min) min = B;
+                
+                /* Calcul de la saturation */
+                int saturation = max - min;
+                
+                /* Binarisation selon le seuil */
+                if (saturation > seuil_saturation) {
+                    img_bin[i][j] = 1;  /* Pixel coloré = objet */
+                } else {
+                    img_bin[i][j] = 0;  /* Pixel neutre = fond */
+                }
+            }            
         }
     }
     

@@ -45,9 +45,9 @@ int* trouver_coordonnees_forme(Image image, int valeur_objet) {
     for (int j=0 ; j<get_hauteur(image) ; j++) {
       if (matrice_labellisee[i][j] == valeur_objet) {
         if (i < i_min) { i_min = i; }
-        else if (j < j_min) { j_min = j; }
-        else if (i > i_max) { i_max = i; }
-        else if (j > j_max) { j_max = j; }
+        if (j < j_min) { j_min = j; }
+        if (i > i_max) { i_max = i; }
+        if (j > j_max) { j_max = j; }
       }
     }
   }
@@ -93,7 +93,7 @@ char* trouver_nature_forme(Image image) {
   // printf("[TRACE] aire = %d\n", aire);
   // printf("[TRACE] circularite = %.2f\n", circularite);
 
-  /* Détermination de la nature de l'forme (cercle ou pas) */
+  /* Détermination de la nature de la forme (cercle ou pas) */
   if (circularite > seuil_forme && circularite < (1+seuil_forme)) {
     nature_forme = "Cercle";
   }

@@ -24,6 +24,7 @@ Objet init_objet(Couleur couleur, Forme forme) {
 Image sous_image_objet(Image image, int valeur_objet, int delta) {
   /* Initialisation et allocation des variables */
   int* tab_coord = trouver_coordonnees_forme(image, valeur_objet);
+  
 
   /* Application du delta en vérifiant que l'on ne sort pas du cadre */
   if ((tab_coord[0] - delta) < 0) tab_coord[0] = 0;
@@ -151,4 +152,66 @@ Couleur trouver_couleur_objet(Image sous_image) {
   
   /* Retourne la couleur trouvée */
   return couleur_objet;
+}
+
+
+char* trouver_direction_objet(Image image, int valeur_objet) {
+  char* direction = "";
+
+  float x_centre_image = get_largeur(image) / (float) 2;
+  float marge = x_centre_image / (float) 5;  // marge arbitraire
+
+  int* tab_coord = trouver_coordonnees_forme(image, valeur_objet);
+  float x_centre_objet = ( tab_coord[1] + tab_coord[3] ) / (float) 2;
+
+  // printf("[TRACE] x_centre_image = %.2f\n", x_centre_image);
+  // printf("[TRACE] x_centre_objet = %.2f\n", x_centre_objet);
+  // printf("[TRACE] marge = %.2f\n", marge);
+
+  if (x_centre_objet < (x_centre_image - marge)) direction = "gauche";
+  else if (x_centre_objet > (x_centre_image + marge)) direction = "droite";
+  else direction = "milieu";
+
+  return direction;
+}
+
+
+float trouver_distance_objet(Image image, int valeur_objet) {
+  float distance_sur_image;
+  float distance_reelle;
+
+  int* tab_coord = trouver_coordonnees_forme(image, valeur_objet);
+
+  float x_vue_robot = get_largeur(image) / (float) 2;
+  float y_vue_robot = (float) get_hauteur(image);
+
+  float x_centre_objet = ( tab_coord[1] + tab_coord[3] ) / (float) 2;
+  float y_centre_objet = ( tab_coord[0] + tab_coord[2] ) / (float) 2;
+
+  distance_sur_image = sqrt( pow((x_vue_robot-x_centre_objet), 2) + pow((y_vue_robot-y_centre_objet), 2) );
+  distance_reelle = distance_sur_image / 120;
+
+  return distance_reelle;
+}
+
+
+float trouver_angle_objet(Image image, int valeur_objet) {
+  float angle;
+
+  int* tab_coord = trouver_coordonnees_forme(image, valeur_objet);
+
+  float x_vue_robot = get_largeur(image) / (float) 2;
+  // float y_vue_robot = (float) get_hauteur(image);
+
+  float x_centre_objet = ( tab_coord[1] + tab_coord[3] ) / (float) 2;
+  // float y_centre_objet = ( tab_coord[0] + tab_coord[2] ) / (float) 2;
+
+  float valeur = (get_hauteur(image) - tab_coord[0]) / ( abs(x_centre_objet-x_vue_robot) );
+
+  angle = atan(valeur);
+
+  angle = angle * 180 / PI;  // pour passer du radian au degré
+  angle = 90 - angle;
+
+  return angle;
 }

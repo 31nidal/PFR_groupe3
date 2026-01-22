@@ -2,6 +2,11 @@
 
 int main()
 {
-  printf("Hello World!\n");
-  return 0;
+    char commande[256];
+
+    if (lire_commande(commande, 256)) {
+        traiter_commande(commande);
+    }
+
+    return 0;
 }
