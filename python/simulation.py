@@ -1,165 +1,165 @@
 import turtle
 import time
-from robot import Robot   # classe Robot 
+import os
+from robot import Robot
 
-# Configuration générale
+# ======================================================
+# CHEMIN ROBUSTE VERS action.txt (racine du projet)
+# ======================================================
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+FICHIER_ACTION = os.path.join(BASE_DIR, "..", "action.txt")
 
-f= open("action.txt","r")
-FICHIER_ACTION = "action.txt"
+# ======================================================
+# PARAMÈTRES D'ANIMATION
+# ======================================================
 
+PAS_DISTANCE = 5      # pas de déplacement (pixels)
+PAS_ANGLE = 5         # pas de rotation (degrés)
+DELAI_ANIM = 0.02     # délai animation
 
-# Mouvement global (une action)
-DISTANCE = 80      # distance totale pour AVANCE
-ANGLE = 90         # angle total pour GAUCHE / DROITE
+# ======================================================
+# LECTURE / ÉCRITURE ACTIONS
+# ======================================================
 
-# Animation progressive
-PAS_DISTANCE = 5   # déplacement par pas
-PAS_ANGLE = 5      # rotation par pas
-DELAI_ANIM = 0.02  # délai entre chaque pas (plus petit = plus rapide)
+def lire_actions():
+    """Lit action.txt ligne par ligne"""
+    if not os.path.exists(FICHIER_ACTION):
+        return []
 
-DELAI_LECTURE = 0.1  # délai entre deux lectures de action.txt
-ACTIONS = {"advance", "retreat", "turn", "stop"}
-
-def decouper_commandes(mots):
-    mots = [m for m in mots if m != "link"]
-
-    commandes = []
-    courante = []
-
-    for mot in mots:
-        if mot in ACTIONS:
-            if courante:
-                commandes.append(courante)
-            courante = [mot]
-        else:
-            courante.append(mot)
-
-    if courante:
-        commandes.append(courante)
-
-    return commandes
-
-
-
-
-
-def lire_action():
-    """Lit l'action envoyée par le programme C."""
     with open(FICHIER_ACTION, "r", encoding="utf-8") as f:
-        mots = f.read().split()
-
-    print(mots)
-    return mots
+        return [l.strip() for l in f if l.strip()]
 
 
-def effacer_action():
-    """Efface l'action après traitement."""
-    open(FICHIER_ACTION, "r").close()
+def effacer_actions():
+    """Vide action.txt après exécution complète"""
+    open(FICHIER_ACTION, "w").close()
 
+# ======================================================
+# MOUVEMENTS PROGRESSIFS
+# ======================================================
 
-def tourner(robot, mots):
-    """Gère l'action tourner avec direction et angle."""
-    direction = None
-    if "left" in mots or "gauche" in mots:
-        direction = "left"
-    elif "right" in mots or "droite" in mots:
-        direction = "right"
-    if direction:
-        angle = ANGLE
-        for word in mots:
-            if word.isdigit():
-                angle = int(word)
-                break
-        angle_restant = angle
-        while angle_restant > 0:
-            pas = min(PAS_ANGLE, angle_restant)
-            robot.tourner(pas, direction)
-            angle_restant -= pas
-            time.sleep(DELAI_ANIM)
-
-
-def appliquer_actions(mots, robot):
-    commandes = decouper_commandes(mots)
-
-    for cmd in commandes:
-        action = cmd[0]
-        params = cmd[1:]
-
-        if action == "advance":
-            distance = DISTANCE
-
-            if params:
-                if params[0].isdigit():
-                    if len(params) >= 2 and params[1] == "meters":
-                        distance = int(params[0])
-                    else:
-                        print("[ERREUR] advance attend 'meters' après la distance")
-                        continue
-
-            robot.avancer(distance)
-
-
-
-
-        elif action == "retreat":
-            distance = DISTANCE
-            for p in params:
-                if p.isdigit():
-                    distance = int(p)
-                    break
-            robot.reculer(distance)
-
-        elif action == "turn":
-            direction = None
-            if "left" in params or "gauche" in params:
-                direction = "left"
-            elif "right" in params or "droite" in params:
-                direction = "right"
-
-            if direction:
-                angle = ANGLE
-                for p in params:
-                    if p.isdigit():
-                        angle = int(p)
-                        break
-                robot.tourner(angle, direction)
-
-        elif action == "stop":
-            print("[SIMULATION] Arrêt demandé")
-            return False
-
+def avancer_progressif(robot, distance, sens=1):
+    reste = distance
+    while reste > 0:
+        pas = min(PAS_DISTANCE, reste)
+        if sens == 1:
+            robot.t.forward(pas)
         else:
-            print(f"[SIMULATION] Action inconnue : {action}")
+            robot.t.backward(pas)
+        reste -= pas
+        time.sleep(DELAI_ANIM)
+
+
+def tourner_progressif(robot, angle, direction):
+    reste = angle
+    while reste > 0:
+        pas = min(PAS_ANGLE, reste)
+        if direction == "left":
+            robot.t.left(pas)
+        else:
+            robot.t.right(pas)
+        reste -= pas
+        time.sleep(DELAI_ANIM)
+
+# ======================================================
+# APPLICATION D'UNE ACTION
+# ======================================================
+
+def appliquer_action(ligne, robot):
+    """
+    Exécute UNE action normalisée :
+    advance X meters
+    retreat X meters
+    turn left X degrees
+    turn right X degrees
+    """
+    parts = ligne.split()
+
+    if len(parts) < 2:
+        print(f"[SIMULATION] Ligne invalide : {ligne}")
+        return True
+
+    action = parts[0]
+
+    # ================= AVANCE =================
+    if action == "advance":
+        distance = int(parts[1])
+        print(f"[SIMULATION] Robot avance de {distance} metres")
+        avancer_progressif(robot, distance, sens=1)
+
+        # 🔴 POINT ROUGE = FIN D'ACTION
+        robot.t.dot(6, "red")
+
+    # ================= RECULE =================
+    elif action == "retreat":
+        distance = int(parts[1])
+        print(f"[SIMULATION] Robot recule de {distance} metres")
+        avancer_progressif(robot, distance, sens=-1)
+
+        # 🔴 POINT ROUGE
+        robot.t.dot(6, "red")
+
+    # ================= TOURNE =================
+    elif action == "turn":
+        if len(parts) < 3:
+            print(f"[SIMULATION] Action turn invalide : {ligne}")
+            return True
+
+        direction = parts[1]
+        angle = int(parts[2])
+
+        if direction not in ("left", "right"):
+            print(f"[SIMULATION] Direction inconnue : {direction}")
+            return True
+
+        print(f"[SIMULATION] Robot tourne {direction} de {angle} degres")
+        tourner_progressif(robot, angle, direction)
+
+        # 🔴 POINT ROUGE = FIN DE ROTATION
+        robot.t.dot(6, "red")
+
+    # ================= STOP =================
+    elif action == "stop":
+        print("[SIMULATION] STOP")
+        return False
+
+    else:
+        print(f"[SIMULATION] Action inconnue : {ligne}")
 
     return True
 
-
-
-
-
+# ======================================================
+# MAIN (MODE BATCH / FILE D’ACTIONS)
+# ======================================================
 
 def main():
     screen = turtle.Screen()
-    screen.title("Simulation Robot – Commande Vocale")
+    screen.title("Simulation Robot – PFR (DEBUG VISUEL)")
     screen.bgcolor("white")
+    screen.tracer(0)
 
     robot = Robot()
-    print("[SIMULATION] En attente de commandes vocales...")
 
-    en_cours = True
+    print("[SIMULATION] Lecture des actions...")
+    actions = lire_actions()
 
-    while en_cours:
-        action = lire_action()
+    if not actions:
+        print("[SIMULATION] Aucune action a executer.")
+        turtle.mainloop()
+        return
 
-        if action:
-            print(f"[SIMULATION] Action reçue : {action}")
-            en_cours = appliquer_actions(action, robot)
-            effacer_action()   
+    for action in actions:
+        continuer = appliquer_action(action, robot)
+        if not continuer:
+            break
+        screen.update()
 
-        time.sleep(DELAI_LECTURE)
+    effacer_actions()
+    print("[SIMULATION] Actions terminees, fichier vide.")
 
-    turtle.exitonclick()
+    turtle.mainloop()
+
 
 if __name__ == "__main__":
     main()

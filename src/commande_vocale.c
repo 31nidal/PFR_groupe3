@@ -4,95 +4,52 @@
 #include <stdlib.h>
 #include <dirent.h>
 
-#include "commande_vocale.h"
-
 /* ===================== CONFIG ===================== */
-
 #define CONFIG_DIR "config"
-#define FICHIER_COMMANDE "commande.txt"
-#define FICHIER_ACTION   "action.txt"
+#define CMD_FILE   "commande.txt"
+#define OUT_FILE   "action.txt"
 
-#define MAX_JSON     8192
-#define MAX_CMD      512
-#define MAX_WORDS    64
-#define MAX_ACTIONS  32
+#define DEFAULT_DISTANCE 50
+#define DEFAULT_ANGLE    90
 
-/* ===================== ACTIONS ABSTRAITES ===================== */
-
-typedef enum {
-    ACTION_ADVANCE,
-    ACTION_RETREAT,
-    ACTION_TURN_LEFT,
-    ACTION_TURN_RIGHT,
-    ACTION_STOP
-} ActionType;
-
-typedef struct {
-    ActionType actions[MAX_ACTIONS];
-    int count;
-} ActionQueue;
+#define MAX_CMD    512
+#define MAX_JSON   20000
+#define MAX_WORDS  128
+#define MAX_FILES  8
 
 /* ===================== UTILITAIRES ===================== */
 
 static void to_lower(char *s) {
-    for (int i = 0; s[i]; i++)
-        s[i] = tolower((unsigned char)s[i]);
+    for (; *s; s++)
+        *s = tolower((unsigned char)*s);
 }
 
 static int is_number(const char *s) {
-    if (!s[0]) return 0;
-    for (int i = 0; s[i]; i++)
-        if (!isdigit((unsigned char)s[i]))
+    if (!*s) return 0;
+    for (; *s; s++)
+        if (!isdigit((unsigned char)*s))
             return 0;
     return 1;
 }
 
-static int load_file(const char *path, char *buffer) {
+static int load_file(const char *path, char *buf) {
     FILE *f = fopen(path, "r");
-    if (!f) return 0;
-    int n = fread(buffer, 1, MAX_JSON - 1, f);
-    buffer[n] = '\0';
+    if (!f) {
+        perror(path);
+        return 0;
+    }
+    size_t n = fread(buf, 1, MAX_JSON - 1, f);
+    buf[n] = '\0';
     fclose(f);
     return 1;
 }
 
-/* ===================== FILE D’ACTIONS =*/
+/* ===================== JSON MATCH ===================== */
 
-static void init_queue(ActionQueue *q) {
-    q->count = 0;
-}
-
-static void enqueue_action(ActionQueue *q, ActionType action) {
-    if (q->count < MAX_ACTIONS)
-        q->actions[q->count++] = action;
-}
-
-/* ===================== TOKENS → ACTIONS ===================== */
-
-static int token_to_action(const char *token, ActionType *action) {
-    if (!strcmp(token, "advance")) {
-        *action = ACTION_ADVANCE; return 1;
-    }
-    if (!strcmp(token, "retreat")) {
-        *action = ACTION_RETREAT; return 1;
-    }
-    if (!strcmp(token, "left")) {
-        *action = ACTION_TURN_LEFT; return 1;
-    }
-    if (!strcmp(token, "right")) {
-        *action = ACTION_TURN_RIGHT; return 1;
-    }
-    if (!strcmp(token, "stop")) {
-        *action = ACTION_STOP; return 1;
-    }
-    return 0;
-}
-
-/* Recherche UNIQUEMENT dans commands{} */
-
-static int find_token_in_json(const char *json,
-                              const char *expression,
-                              char *token) {
+static int json_match(const char *json,
+                      const char *expr,
+                      char *key_out)
+{
     char *cmd = strstr(json, "\"commands\"");
     if (!cmd) return 0;
 
@@ -101,118 +58,116 @@ static int find_token_in_json(const char *json,
     cmd++;
 
     char *p = cmd;
+
     while (*p && *p != '}') {
-        if (*p != '"') {
-            p++;
-            continue;
-        }
+
+        if (*p != '"') { p++; continue; }
 
         char key[64];
         sscanf(p + 1, "%63[^\"]", key);
 
-        char *list_start = strchr(p, '[');
-        if (!list_start) break;
-        char *list_end = strchr(list_start, ']');
-        if (!list_end) break;
+        char *colon = strchr(p, ':');
+        if (!colon) return 0;
 
-        char values[1024];
-        strncpy(values, list_start, list_end - list_start);
-        values[list_end - list_start] = '\0';
+        char *start = strchr(colon, '[');
+        char *end   = start ? strchr(start, ']') : NULL;
+        if (!start || !end) { p++; continue; }
 
-        /* nombres */
-        if (is_number(expression) && strcmp(key, "distance") == 0) {
-            strcpy(token, "distance");
-            return 1;
+        char *v = start + 1;
+        while (v < end) {
+            if (*v == '"') {
+                char value[64];
+                sscanf(v + 1, "%63[^\"]", value);
+                if (strcmp(value, expr) == 0) {
+                    strcpy(key_out, key);
+                    return 1;
+                }
+            }
+            v++;
         }
-
-        char quoted[128];
-        snprintf(quoted, sizeof(quoted), "\"%s\"", expression);
-
-        if (strstr(values, quoted)) {
-            strcpy(token, key);
-            return 1;
-        }
-
-        p = list_end + 1;
+        p = end + 1;
     }
     return 0;
 }
 
-/* ===================== SORTIE ABSTRAITE ===================== */
+/* ===================== PIPELINE ===================== */
 
-static void output_action(ActionType action) {
-    FILE *f = fopen(FICHIER_ACTION, "a");
-    if (!f) return;
-
-    switch (action) {
-        case ACTION_ADVANCE:
-            fprintf(f, "advance ");
-            printf("[ACTION] advance\n");
-            break;
-        case ACTION_RETREAT:
-            fprintf(f, "retreat ");
-            printf("[ACTION] retreat\n");
-            break;
-        case ACTION_TURN_LEFT:
-            fprintf(f, "left ");
-            printf("[ACTION] left\n");
-            break;
-        case ACTION_TURN_RIGHT:
-            fprintf(f, "right ");
-            printf("[ACTION] right\n");
-            break;
-        case ACTION_STOP:
-            fprintf(f, "stop ");
-            printf("[ACTION] stop\n");
-            break;
-    }
-    fclose(f);
-}
-
-/* ===================== PIPELINE PRINCIPAL ===================== */
-
-void traiter_commande(void) {
+void traiter_commande(void)
+{
     char phrase[MAX_CMD];
-    char json[MAX_JSON];
+    char jsons[MAX_FILES][MAX_JSON];
+    int json_count = 0;
 
-    FILE *f = fopen(FICHIER_COMMANDE, "r");
-    if (!f) {
-        printf("[ERREUR] commande.txt introuvable\n");
+    /* Charger les JSON */
+    DIR *dir = opendir(CONFIG_DIR);
+    if (!dir) {
+        perror("config");
         return;
     }
-    fgets(phrase, MAX_CMD, f);
+
+    struct dirent *ent;
+    while ((ent = readdir(dir)) && json_count < MAX_FILES) {
+        if (strstr(ent->d_name, ".json")) {
+            char path[256];
+            snprintf(path, sizeof(path), "%s/%s", CONFIG_DIR, ent->d_name);
+            if (load_file(path, jsons[json_count]))
+                json_count++;
+        }
+    }
+    closedir(dir);
+
+    if (json_count == 0) {
+        printf("[ERREUR] Aucun JSON charge\n");
+        return;
+    }
+
+    /* Lire commande */
+    FILE *f = fopen(CMD_FILE, "r");
+    if (!f) {
+        perror("commande.txt");
+        return;
+    }
+
+    if (!fgets(phrase, MAX_CMD, f)) {
+        fclose(f);
+        return;
+    }
     fclose(f);
 
-    phrase[strcspn(phrase, "\n")] = '\0';
+    phrase[strcspn(phrase, "\n")] = 0;
     to_lower(phrase);
 
-    printf("[TRACE] Phrase recue : %s\n", phrase);
+    if (!*phrase) {
+        printf("[INFO] Phrase vide ignoree\n");
+        return;
+    }
 
-    /* découpage en mots */
+    printf("[TRACE] Phrase : %s\n", phrase);
+
+    /* Découpage */
     char *words[MAX_WORDS];
-    int word_count = 0;
-
+    int n = 0;
     char *tok = strtok(phrase, " ");
-    while (tok && word_count < MAX_WORDS) {
-        words[word_count++] = tok;
+    while (tok && n < MAX_WORDS) {
+        words[n++] = tok;
         tok = strtok(NULL, " ");
     }
 
-    ActionQueue queue;
-    init_queue(&queue);
-
-    DIR *dir = opendir(CONFIG_DIR);
-    if (!dir) {
-        printf("[ERREUR] dossier config introuvable\n");
+    FILE *out = fopen(OUT_FILE, "a");
+    if (!out) {
+        perror("action.txt");
         return;
     }
 
-    /* Fenêtre glissante : 3 mots → 2 mots → 1 mot */
-    for (int i = 0; i < word_count; i++) {
+    int i = 0;
+
+    while (i < n) {
+
+        char key[64];
         int matched = 0;
 
         for (int size = 3; size >= 1 && !matched; size--) {
-            if (i + size > word_count) continue;
+            if (i + size > n) continue;
 
             char expr[128] = "";
             for (int k = 0; k < size; k++) {
@@ -220,35 +175,54 @@ void traiter_commande(void) {
                 if (k < size - 1) strcat(expr, " ");
             }
 
-            rewinddir(dir);
-            struct dirent *entry;
+            for (int j = 0; j < json_count; j++) {
 
-            while ((entry = readdir(dir))) {
-                if (!strstr(entry->d_name, ".json")) continue;
+                if (!json_match(jsons[j], expr, key))
+                    continue;
 
-                char path[256];
-                snprintf(path, sizeof(path), "%s/%s", CONFIG_DIR, entry->d_name);
-                if (!load_file(path, json)) continue;
+                /* ===== AVANCE / RECULE ===== */
+                if (!strcmp(key, "advance") || !strcmp(key, "retreat")) {
+                    int dist = DEFAULT_DISTANCE;
 
-                char token[64];
-                if (find_token_in_json(json, expr, token)) {
-                    printf("[TOKEN] \"%s\" -> %s\n", expr, token);
+                    for (int k = i; k < n && k < i + 6; k++)
+                        if (is_number(words[k]))
+                            dist = atoi(words[k]);
 
-                    ActionType action;
-                    if (token_to_action(token, &action)) {
-                        enqueue_action(&queue, action);
-                    }
+                    fprintf(out, "%s %d meters\n", key, dist);
+                    printf("[ACTION] %s %d meters\n", key, dist);
                     matched = 1;
-                    i += size - 1; /* sauter les mots consommés */
+                    break;
+                }
+
+                /* ===== TOURNER ===== */
+                if (!strcmp(key, "turn")) {
+                    const char *dir = "right";
+                    int angle = DEFAULT_ANGLE;
+
+                    for (int k = i; k < n && k < i + 6; k++) {
+
+                        if (is_number(words[k]))
+                            angle = atoi(words[k]);
+
+                        char tmp[64];
+                        for (int l = 0; l < json_count; l++) {
+                            if (json_match(jsons[l], words[k], tmp)) {
+                                if (!strcmp(tmp, "left") || !strcmp(tmp, "right"))
+                                    dir = tmp;
+                            }
+                        }
+                    }
+
+                    fprintf(out, "turn %s %d degrees\n", dir, angle);
+                    printf("[ACTION] turn %s %d degrees\n", dir, angle);
+                    matched = 1;
                     break;
                 }
             }
         }
-    }
-    closedir(dir);
 
-    /* Exécution abstraite (ordre respecté) */
-    for (int i = 0; i < queue.count; i++) {
-        output_action(queue.actions[i]);
+        i++;
     }
+
+    fclose(out);
 }

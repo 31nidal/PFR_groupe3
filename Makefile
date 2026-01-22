@@ -1,43 +1,41 @@
-# ================== COMPILATION C ==================
+# ================= CONFIG =================
 
 CC      = gcc
-CFLAGS  = -Wall -Wextra -std=c11
-INCLUDE = -Iinclude
-
+CFLAGS  = -Wall -Wextra -Iinclude
 SRC     = src/main.c src/commande_vocale.c
-BIN     = bin/commande_vocale
+OBJ     = $(SRC:.c=.o)
+BIN     = bin/prog
 
-# ================== PYTHON ==================
+PYTHON  = python3
+SIMU    = python/simulation.py
 
-PYTHON  = venv/bin/python
-VOICE   = python/assistant_vocal.py
-SIMU    = python/simulation_controller.py
+# ================= BUILD =================
 
-# ================== CIBLES ==================
+all: $(BIN)
 
-all: run
+$(BIN): $(OBJ)
+	@mkdir -p bin
+	$(CC) $(CFLAGS) $(OBJ) -o $(BIN)
 
-bin:
-	mkdir -p bin
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
-$(BIN): bin $(SRC)
-	$(CC) $(CFLAGS) $(INCLUDE) $(SRC) -o $(BIN)
-
-# -------- Programme principal (menu infini) --------
-run: $(BIN)
-	@echo "=== Lancement du programme ==="
-	./$(BIN)
-
-# -------- Simulation Turtle --------
-simu:
-	@echo "=== Lancement de la simulation ==="
-	$(PYTHON) $(SIMU)
-
-# -------- Nettoyage --------
 clean:
-	rm -rf bin action.txt
+	rm -f src/*.o
 
-clean-all:
-	rm -rf bin action.txt lois.txt
+fclean: clean
+	rm -f $(BIN)
 
-.PHONY: all run simu clean clean-all
+re: fclean all
+
+# ================= EXECUTION =================
+
+run: re
+	@touch action.txt
+	@$(BIN)
+
+simulation:
+	@echo "=== Simulation des actions ==="
+	@$(PYTHON) $(SIMU)
+
+.PHONY: all clean fclean re run simulation
