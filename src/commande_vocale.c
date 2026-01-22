@@ -196,7 +196,8 @@ void traiter_commande(void)
 
                 /* ===== TOURNER ===== */
                 if (!strcmp(key, "turn")) {
-                    const char *dir = "right";
+
+                    char dir_str[16] = "right";   // FIX
                     int angle = DEFAULT_ANGLE;
 
                     for (int k = i; k < n && k < i + 6; k++) {
@@ -207,14 +208,15 @@ void traiter_commande(void)
                         char tmp[64];
                         for (int l = 0; l < json_count; l++) {
                             if (json_match(jsons[l], words[k], tmp)) {
-                                if (!strcmp(tmp, "left") || !strcmp(tmp, "right"))
-                                    dir = tmp;
+                                if (!strcmp(tmp, "left") || !strcmp(tmp, "right")) {
+                                    strcpy(dir_str, tmp);   // FIX
+                                }
                             }
                         }
                     }
 
-                    fprintf(out, "turn %s %d degrees\n", dir, angle);
-                    printf("[ACTION] turn %s %d degrees\n", dir, angle);
+                    fprintf(out, "turn %s %d degrees\n", dir_str, angle);
+                    printf("[ACTION] turn %s %d degrees\n", dir_str, angle);
                     matched = 1;
                     break;
                 }
