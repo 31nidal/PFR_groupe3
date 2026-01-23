@@ -11,6 +11,7 @@ python/rep.mp3
 action.txt
 # macOS
 .DS_Store
+<<<<<<< HEAD
 bin/
 python/__pycache__/
 *.mp3
@@ -32,3 +33,6 @@ action.txt
 # Python
 __pycache__/
 action.txt
+=======
+bin/*.out
+>>>>>>> main

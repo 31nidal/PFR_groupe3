@@ -1,11 +1,8 @@
 #include <stdio.h>
 #include <string.h>
-#include <ctype.h>
 #include <stdlib.h>
-#include <dirent.h>
 
 /* ===================== CONFIG ===================== */
-#define CONFIG_DIR "config"
 #define CMD_FILE   "commande.txt"
 #define OUT_FILE   "action.txt"
 
@@ -15,33 +12,50 @@
 #define MAX_CMD    512
 #define MAX_JSON   20000
 #define MAX_WORDS  128
-#define MAX_FILES  8
+
+/* ===================== JSON FILES ===================== */
+static const char *json_files[] = {
+    "config/fr.json",
+    "config/en.json",
+    "config/es.json"
+};
+
+#define JSON_COUNT (sizeof(json_files) / sizeof(json_files[0]))
 
 /* ===================== UTILITAIRES ===================== */
 
+static char my_tolower(char c) {
+    if (c >= 'A' && c <= 'Z') return c + ('a' - 'A');
+    return c;
+}
+
+static int my_isdigit(char c) {
+    return (c >= '0' && c <= '9');
+}
+
 static void to_lower(char *s) {
-    for (; *s; s++)
-        *s = tolower((unsigned char)*s);
+    for (; *s; s++) *s = my_tolower(*s);
 }
 
 static int is_number(const char *s) {
     if (!*s) return 0;
     for (; *s; s++)
-        if (!isdigit((unsigned char)*s))
+        if (!my_isdigit(*s))
             return 0;
     return 1;
 }
 
 static int load_file(const char *path, char *buf) {
     FILE *f = fopen(path, "r");
-    if (!f) {
-        perror(path);
-        return 0;
-    }
+    if (!f) return 0;
     size_t n = fread(buf, 1, MAX_JSON - 1, f);
     buf[n] = '\0';
     fclose(f);
     return 1;
+}
+
+static int starts_with(const char *s, const char *prefix) {
+    return strncmp(s, prefix, strlen(prefix)) == 0;
 }
 
 /* ===================== JSON MATCH ===================== */
@@ -53,41 +67,86 @@ static int json_match(const char *json,
     char *cmd = strstr(json, "\"commands\"");
     if (!cmd) return 0;
 
-    cmd = strchr(cmd, '{');
-    if (!cmd) return 0;
-    cmd++;
+    cmd = strchr(cmd, '{') + 1;
 
-    char *p = cmd;
+    while (*cmd && *cmd != '}') {
 
-    while (*p && *p != '}') {
-
-        if (*p != '"') { p++; continue; }
+        if (*cmd != '"') { cmd++; continue; }
 
         char key[64];
-        sscanf(p + 1, "%63[^\"]", key);
+        sscanf(cmd + 1, "%63[^\"]", key);
 
-        char *colon = strchr(p, ':');
-        if (!colon) return 0;
-
-        char *start = strchr(colon, '[');
+        char *start = strchr(cmd, '[');
         char *end   = start ? strchr(start, ']') : NULL;
-        if (!start || !end) { p++; continue; }
+        if (!start || !end) { cmd++; continue; }
 
-        char *v = start + 1;
-        while (v < end) {
+        for (char *v = start + 1; v < end; v++) {
             if (*v == '"') {
                 char value[64];
                 sscanf(v + 1, "%63[^\"]", value);
-                if (strcmp(value, expr) == 0) {
+                if (!strcmp(value, expr)) {
                     strcpy(key_out, key);
                     return 1;
                 }
             }
-            v++;
         }
-        p = end + 1;
+        cmd = end + 1;
     }
     return 0;
+}
+
+/* ===================== UNITÉS ===================== */
+
+static int is_meter_unit(char **words, int i, int n,
+                         char jsons[JSON_COUNT][MAX_JSON])
+{
+    if (i + 1 >= n) return 0;
+
+    /* Tolérance directe */
+    if (!strcmp(words[i + 1], "m"))
+        return 1;
+
+    char key[64];
+    for (size_t j = 0; j < JSON_COUNT; j++) {
+        if (json_match(jsons[j], words[i + 1], key)) {
+            if (!strcmp(key, "meters"))
+                return 1;
+        }
+    }
+    return 0;
+}
+
+/* ===================== FIND BALL ===================== */
+
+static int detect_find_ball(char **words, int n,
+                            char jsons[JSON_COUNT][MAX_JSON],
+                            char *color_out)
+{
+    int found = 0, ball = 0;
+
+    for (int i = 0; i < n; i++) {
+
+        /* Tolérance "trouve / trouver / trouves" */
+        if (starts_with(words[i], "trouv"))
+            found = 1;
+
+        char key[64];
+        for (size_t j = 0; j < JSON_COUNT; j++) {
+            if (json_match(jsons[j], words[i], key)) {
+
+                if (!strcmp(key, "found")) found = 1;
+                else if (!strcmp(key, "ball")) ball = 1;
+                else if (!strcmp(key, "red") ||
+                         !strcmp(key, "blue") ||
+                         !strcmp(key, "green") ||
+                         !strcmp(key, "yellow")) {
+                    strcpy(color_out, key);
+                }
+            }
+        }
+    }
+
+    return found && ball && *color_out;
 }
 
 /* ===================== PIPELINE ===================== */
@@ -95,39 +154,15 @@ static int json_match(const char *json,
 void traiter_commande(void)
 {
     char phrase[MAX_CMD];
-    char jsons[MAX_FILES][MAX_JSON];
-    int json_count = 0;
+    char jsons[JSON_COUNT][MAX_JSON];
 
-    /* Charger les JSON */
-    DIR *dir = opendir(CONFIG_DIR);
-    if (!dir) {
-        perror("config");
-        return;
-    }
-
-    struct dirent *ent;
-    while ((ent = readdir(dir)) && json_count < MAX_FILES) {
-        if (strstr(ent->d_name, ".json")) {
-            char path[256];
-            snprintf(path, sizeof(path), "%s/%s", CONFIG_DIR, ent->d_name);
-            if (load_file(path, jsons[json_count]))
-                json_count++;
-        }
-    }
-    closedir(dir);
-
-    if (json_count == 0) {
-        printf("[ERREUR] Aucun JSON charge\n");
-        return;
-    }
+    /* Charger JSON */
+    for (size_t i = 0; i < JSON_COUNT; i++)
+        if (!load_file(json_files[i], jsons[i])) return;
 
     /* Lire commande */
     FILE *f = fopen(CMD_FILE, "r");
-    if (!f) {
-        perror("commande.txt");
-        return;
-    }
-
+    if (!f) return;
     if (!fgets(phrase, MAX_CMD, f)) {
         fclose(f);
         return;
@@ -136,11 +171,6 @@ void traiter_commande(void)
 
     phrase[strcspn(phrase, "\n")] = 0;
     to_lower(phrase);
-
-    if (!*phrase) {
-        printf("[INFO] Phrase vide ignoree\n");
-        return;
-    }
 
     printf("[TRACE] Phrase : %s\n", phrase);
 
@@ -154,76 +184,68 @@ void traiter_commande(void)
     }
 
     FILE *out = fopen(OUT_FILE, "a");
-    if (!out) {
-        perror("action.txt");
+    if (!out) return;
+
+    /* ===== PRIORITÉ FIND BALL ===== */
+    char color[16] = "";
+    if (detect_find_ball(words, n, jsons, color)) {
+        fprintf(out, "find_ball %s\n", color);
+        printf("[ACTION] find_ball %s\n", color);
+        fclose(out);
         return;
     }
 
-    int i = 0;
-
-    while (i < n) {
+    /* ===== COMMANDES CLASSIQUES ===== */
+    for (int i = 0; i < n; i++) {
 
         char key[64];
-        int matched = 0;
+        for (size_t j = 0; j < JSON_COUNT; j++) {
 
-        for (int size = 3; size >= 1 && !matched; size--) {
-            if (i + size > n) continue;
+            if (!json_match(jsons[j], words[i], key))
+                continue;
 
-            char expr[128] = "";
-            for (int k = 0; k < size; k++) {
-                strcat(expr, words[i + k]);
-                if (k < size - 1) strcat(expr, " ");
-            }
+            /* AVANCE / RECULE */
+            if (!strcmp(key, "advance") || !strcmp(key, "retreat")) {
 
-            for (int j = 0; j < json_count; j++) {
+                int dist = DEFAULT_DISTANCE;
 
-                if (!json_match(jsons[j], expr, key))
-                    continue;
-
-                /* ===== AVANCE / RECULE ===== */
-                if (!strcmp(key, "advance") || !strcmp(key, "retreat")) {
-                    int dist = DEFAULT_DISTANCE;
-
-                    for (int k = i; k < n && k < i + 6; k++)
-                        if (is_number(words[k]))
-                            dist = atoi(words[k]);
-
-                    fprintf(out, "%s %d meters\n", key, dist);
-                    printf("[ACTION] %s %d meters\n", key, dist);
-                    matched = 1;
-                    break;
+                for (int k = i; k < n - 1; k++) {
+                    if (is_number(words[k]) &&
+                        is_meter_unit(words, k, n, jsons)) {
+                        dist = atoi(words[k]);
+                        break;
+                    }
                 }
 
-                /* ===== TOURNER ===== */
-                if (!strcmp(key, "turn")) {
+                fprintf(out, "%s %d meters\n", key, dist);
+                printf("[ACTION] %s %d meters\n", key, dist);
+            }
 
-                    char dir_str[16] = "right";   // FIX
-                    int angle = DEFAULT_ANGLE;
+            /* TOURNER */
+            if (!strcmp(key, "turn")) {
 
-                    for (int k = i; k < n && k < i + 6; k++) {
+                char dir[16] = "right";
+                int angle = DEFAULT_ANGLE;
 
-                        if (is_number(words[k]))
-                            angle = atoi(words[k]);
+                for (int k = i; k < n; k++) {
 
-                        char tmp[64];
-                        for (int l = 0; l < json_count; l++) {
-                            if (json_match(jsons[l], words[k], tmp)) {
-                                if (!strcmp(tmp, "left") || !strcmp(tmp, "right")) {
-                                    strcpy(dir_str, tmp);   // FIX
-                                }
-                            }
+                    if (is_number(words[k]))
+                        angle = atoi(words[k]);
+
+                    char tmp[64];
+                    for (size_t l = 0; l < JSON_COUNT; l++) {
+                        if (json_match(jsons[l], words[k], tmp)) {
+                            if (!strcmp(tmp, "left") ||
+                                !strcmp(tmp, "right"))
+                                strcpy(dir, tmp);
                         }
                     }
-
-                    fprintf(out, "turn %s %d degrees\n", dir_str, angle);
-                    printf("[ACTION] turn %s %d degrees\n", dir_str, angle);
-                    matched = 1;
-                    break;
                 }
+
+                fprintf(out, "turn %s %d degrees\n", dir, angle);
+                printf("[ACTION] turn %s %d degrees\n", dir, angle);
             }
         }
-
-        i++;
     }
 
     fclose(out);

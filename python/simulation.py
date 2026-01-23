@@ -1,55 +1,60 @@
 import turtle
 import time
 import os
+import math
 from robot import Robot
+import simul
 
 # ======================================================
-# CHEMIN ROBUSTE VERS action.txt (racine du projet)
+# CHEMIN VERS action.txt
 # ======================================================
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 FICHIER_ACTION = os.path.join(BASE_DIR, "..", "action.txt")
 
 # ======================================================
-# PARAMÈTRES D'ANIMATION
+# PARAMÈTRES
 # ======================================================
 
-PAS_DISTANCE = 5      # pas de déplacement (pixels)
-PAS_ANGLE = 5         # pas de rotation (degrés)
-DELAI_ANIM = 0.02     # délai animation
+PAS_DISTANCE = 5
+PAS_ANGLE = 5
+DELAI_ANIM = 0.02
 
 # ======================================================
-# LECTURE / ÉCRITURE ACTIONS
+# MAPPING COULEURS (VOIX → ENVIRONNEMENT)
+# ======================================================
+
+COLOR_MAP = {
+    "red": "rouge",
+    "blue": "bleu",
+    "yellow": "jaune",
+    "green": "vert"
+}
+
+# ======================================================
+# LECTURE ACTIONS
 # ======================================================
 
 def lire_actions():
-    """Lit action.txt ligne par ligne"""
     if not os.path.exists(FICHIER_ACTION):
         return []
-
     with open(FICHIER_ACTION, "r", encoding="utf-8") as f:
         return [l.strip() for l in f if l.strip()]
 
-
 def effacer_actions():
-    """Vide action.txt après exécution complète"""
     open(FICHIER_ACTION, "w").close()
 
 # ======================================================
-# MOUVEMENTS PROGRESSIFS
+# MOUVEMENTS
 # ======================================================
 
 def avancer_progressif(robot, distance, sens=1):
     reste = distance
     while reste > 0:
         pas = min(PAS_DISTANCE, reste)
-        if sens == 1:
-            robot.t.forward(pas)
-        else:
-            robot.t.backward(pas)
+        robot.t.forward(pas if sens == 1 else -pas)
         reste -= pas
         time.sleep(DELAI_ANIM)
-
 
 def tourner_progressif(robot, angle, direction):
     reste = angle
@@ -63,103 +68,119 @@ def tourner_progressif(robot, angle, direction):
         time.sleep(DELAI_ANIM)
 
 # ======================================================
-# APPLICATION D'UNE ACTION
+# FIND BALL (CORRIGÉ)
+# ======================================================
+
+def chercher_balle(robot, couleur=None):
+    print("[SIMULATION] Recherche de balle")
+
+    env = simul.initialiser_environnement()
+    balles = env.get("obstacles", [])
+
+    if not balles:
+        print("[SIMULATION] Aucune balle dans l'environnement")
+        return
+
+    # Traduction couleur EN → FR
+    if couleur:
+        couleur = COLOR_MAP.get(couleur, couleur)
+
+    rx, ry = robot.t.position()
+    cible = None
+    dist_min = float("inf")
+
+    for b in balles:
+        nom = b["nom"]          # ex: balle_rouge
+        bx, by = b["centre"]
+
+        if couleur and couleur not in nom:
+            continue
+
+        dist = math.hypot(bx - rx, by - ry)
+
+        if dist < dist_min:
+            dist_min = dist
+            cible = b
+
+    if not cible:
+        print("[SIMULATION] Aucune balle correspondante")
+        return
+
+    bx, by = cible["centre"]
+    dx = bx - rx
+    dy = by - ry
+
+    angle = math.degrees(math.atan2(dy, dx))
+    robot.t.setheading(angle)
+
+    avancer_progressif(robot, int(dist_min))
+
+    robot.t.dot(14, cible["couleur"])
+    print(f"[SIMULATION] Balle atteinte : {cible['nom']}")
+
+# ======================================================
+# APPLICATION ACTION
 # ======================================================
 
 def appliquer_action(ligne, robot):
-    """
-    Exécute UNE action normalisée :
-    advance X meters
-    retreat X meters
-    turn left X degrees
-    turn right X degrees
-    """
     parts = ligne.split()
-
-    if len(parts) < 2:
-        print(f"[SIMULATION] Ligne invalide : {ligne}")
-        return True
-
     action = parts[0]
 
-    # ================= AVANCE =================
     if action == "advance":
-        distance = int(parts[1])
-        print(f"[SIMULATION] Robot avance de {distance} metres")
-        avancer_progressif(robot, distance, sens=1)
+        avancer_progressif(robot, int(parts[1]))
 
-        # 🔴 POINT ROUGE = FIN D'ACTION
-        robot.t.dot(6, "red")
-
-    # ================= RECULE =================
     elif action == "retreat":
-        distance = int(parts[1])
-        print(f"[SIMULATION] Robot recule de {distance} metres")
-        avancer_progressif(robot, distance, sens=-1)
+        avancer_progressif(robot, int(parts[1]), sens=-1)
 
-        # 🔴 POINT ROUGE
-        robot.t.dot(6, "red")
-
-    # ================= TOURNE =================
     elif action == "turn":
-        if len(parts) < 3:
-            print(f"[SIMULATION] Action turn invalide : {ligne}")
-            return True
+        tourner_progressif(robot, int(parts[2]), parts[1])
 
-        direction = parts[1]
-        angle = int(parts[2])
+    elif action == "find_ball":
+        if len(parts) > 1:
+            chercher_balle(robot, parts[1])
+        else:
+            chercher_balle(robot)
 
-        if direction not in ("left", "right"):
-            print(f"[SIMULATION] Direction inconnue : {direction}")
-            return True
-
-        print(f"[SIMULATION] Robot tourne {direction} de {angle} degres")
-        tourner_progressif(robot, angle, direction)
-
-        # 🔴 POINT ROUGE = FIN DE ROTATION
-        robot.t.dot(6, "red")
-
-    # ================= STOP =================
     elif action == "stop":
-        print("[SIMULATION] STOP")
         return False
 
     else:
         print(f"[SIMULATION] Action inconnue : {ligne}")
 
+    robot.t.dot(6, "red")
     return True
 
 # ======================================================
-# MAIN (MODE BATCH / FILE D’ACTIONS)
+# MAIN
 # ======================================================
 
 def main():
     screen = turtle.Screen()
-    screen.title("Simulation Robot – PFR (DEBUG VISUEL)")
+    screen.title("Simulation Robot – PFR")
     screen.bgcolor("white")
     screen.tracer(0)
 
-    robot = Robot()
+    simul.tracer_environnement(simul.initialiser_environnement())
+
+    robot = Robot(start_x=0, start_y=-250, initial_heading=90)
 
     print("[SIMULATION] Lecture des actions...")
     actions = lire_actions()
 
     if not actions:
-        print("[SIMULATION] Aucune action a executer.")
+        print("[SIMULATION] Aucune action")
         turtle.mainloop()
         return
 
-    for action in actions:
-        continuer = appliquer_action(action, robot)
-        if not continuer:
+    for act in actions:
+        if not appliquer_action(act, robot):
             break
         screen.update()
 
     effacer_actions()
-    print("[SIMULATION] Actions terminees, fichier vide.")
+    print("[SIMULATION] Actions terminées")
 
     turtle.mainloop()
-
 
 if __name__ == "__main__":
     main()

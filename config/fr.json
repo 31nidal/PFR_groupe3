@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
     "general_parameters": {
         "language_name": "Français"
     },
@@ -53,5 +54,34 @@
         "blue": ["bleu", "bleu clair", "azur"],
         "yellow": ["jaune", "jaune vif", "doré"],
         "green": ["vert", "vert foncé", "émeraude"]
+=======
+    "paramètres_généraux": {
+        "nom_langue": "Français"
+    },
+    "messages": {
+        "texte_bienvenue": "Bonjour !",
+        "préfixe": "[TRACE]",
+        "confirmation": "D’accord.",
+        "demander_commande": "Que veux-tu que le robot fasse ?",
+        "erreur_commande": "Je n’ai pas compris la commande.",
+        
+        "avancer": "avance",
+        "reculer": "recule",
+        "tourner_droite": "tourne à droite",
+        "tourner_gauche": "tourne à gauche",
+        "aller_à": "se déplace à la position absolue",
+        
+        "unité_distance": "mètres",
+        "unité_angle": "degrés",
+        
+        "arrêter_tracé": "arrête de tracer (penup)",
+        "commencer_tracé": "commence à tracer (pendown)"
+    },
+    "commandes": {
+        "avancer": ["avance", "va tout droit"],
+        "gauche": ["gauche", "tourne à gauche"],
+        "droite": ["droite", "tourne à droite"],
+        "arrêter": ["stop", "arrête"]
+>>>>>>> main
     }
 }

@@ -1,41 +1,49 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "../include/image.h"
+#include "../include/objet.h"
+#include "../include/config.h"
 
 int main() {
-    int i;
-    char* binaire;
-    int decimal;
-    
-    printf("===== TESTS DE CONVERSION =====\n\n");
-    
-    /* Test 1: Décimal vers Binaire */
-    printf("Test 1: Décimal vers Binaire\n");
-    printf("-----------------------------\n");
-    printf("10 en binaire: %s\n", decimal_en_binaire(10));
-    printf("255 en binaire: %s\n", decimal_en_binaire(255));
-    printf("42 en binaire: %s\n", decimal_en_binaire(42));
-    
-    /* Test 2: Binaire vers Décimal */
-    printf("\nTest 2: Binaire vers Décimal\n");
-    printf("-----------------------------\n");
-    printf("1010 en décimal: %d\n", binaire_en_decimal("1010"));
-    printf("11111111 en décimal: %d\n", binaire_en_decimal("11111111"));
-    printf("101010 en décimal: %d\n", binaire_en_decimal("101010"));
-    
-    /* Test 3: Vérification (aller-retour) */
-    printf("\nTest 3: Vérification (Décimal -> Binaire -> Décimal)\n");
-    printf("-----------------------------------------------------\n");
-    int nombres[] = {15, 64, 100};
-    
-    for (i = 0; i < 3; i++) {
-        binaire = decimal_en_binaire(nombres[i]);
-        decimal = binaire_en_decimal(binaire);
-        printf("%d -> %s -> %d [%s]\n", 
-               nombres[i], binaire, decimal,
-               nombres[i] == decimal ? "OK" : "ERREUR");
-        free(binaire);
+    /* Charger la configuration */
+    if (!charger_config("config/config.json")) {
+        return 1;
     }
+    int seuil_quantif = lire_valeur_json("quantification_bits", config_json);
+    printf("\n --> Nombre de bits utilisés pour la quantification : %d\n", seuil_quantif);
     
+    /* Définition de l'image à traiter */
+    Image image = lire_image();
+    int nb_objets = nombre_objets_image(image);
+    char* direction_objet;
+    int distance_objet;
+    int angle_objet;
+
+    for (int k=1 ; k<nb_objets+1 ; k++) {
+        printf("\n===== Objet %d =====\n", k);
+        Objet objet_courant = init_objet(k);
+
+        trouver_coordonnees_objet(objet_courant, image);
+        trouver_couleur_objet(objet_courant, image);
+        trouver_nature_objet(objet_courant, image);
+
+        afficher_coordonnees_objet(objet_courant);
+        afficher_couleur_objet(objet_courant);
+        afficher_nature_objet(objet_courant);
+
+        direction_objet = trouver_direction_objet(objet_courant, image);
+        distance_objet = trouver_distance_objet(objet_courant, image);
+        angle_objet = trouver_angle_objet(objet_courant, image);
+
+
+        printf("Direction : %s\n", direction_objet);
+        printf("Distance : %dm\n", distance_objet);
+        printf("Angle : %d°\n", angle_objet);
+    }
+
+    /* Libération */    
+    liberer_config();
+
     return 0;
 }

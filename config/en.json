@@ -19,6 +19,7 @@
         "angle_unit": "degrees",
         
         "stop_trace": "stops drawing (penup)",
+<<<<<<< HEAD
         "start_trace": "starts drawing (pendown)",
         "direction": "direction",
         "distance": "distance",
@@ -54,5 +55,16 @@
         "blue": ["blue", "azure", "navy"],
         "yellow": ["yellow", "golden", "amber"],
         "green": ["green", "emerald", "lime"]
+=======
+        "start_trace": "starts drawing (pendown)"
+    },
+
+    "commands": {
+        "advance": ["go forward", "move forward"],
+        "left": ["left", "turn left"],
+        "right": ["right", "turn right"],
+        "stop": ["stop", "halt"]
+        
+>>>>>>> main
     }
 }
