@@ -16,7 +16,6 @@ enum Couleur {
   GRIS
 };
 
-
 /* Initialise une image (allocation mémoire) */
 Image init_image(int largeur_image, int hauteur);
 

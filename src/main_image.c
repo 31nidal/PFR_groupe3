@@ -5,6 +5,7 @@
 #include "../include/objet.h"
 #include "../include/config.h"
 
+
 int main() {
     /* Charger la configuration */
     if (!charger_config("config/config.json")) {
@@ -38,7 +39,7 @@ int main() {
 
 
         printf("Direction : %s\n", direction_objet);
-        printf("Distance : %dm\n", distance_objet);
+        printf("Distance : %d px\n", distance_objet);
         printf("Angle : %d°\n", angle_objet);
     }
 

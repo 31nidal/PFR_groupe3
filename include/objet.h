@@ -41,9 +41,14 @@ int trouver_distance_objet(Objet objet, Image image);
 int trouver_angle_objet(Objet objet, Image image);
 
 /* getteurs */
-int get_x_dep(Objet objet);
-int get_y_dep(Objet objet);
-int get_x_arr(Objet objet);
-int get_y_arr(Objet objet);
+Couleur get_couleur_objet(Objet objet);
+char* get_nature_forme_objet(Objet objet);
+int get_i_min(Objet objet);
+int get_j_min(Objet objet);
+int get_i_max(Objet objet);
+int get_j_max(Objet objet);
+
+
+void commande_balle(const char* direction, int angle, int distance);
 
 #endif

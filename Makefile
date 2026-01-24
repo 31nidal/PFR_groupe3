@@ -1,11 +1,18 @@
-bin/prog_principal.out: lib/main.o
-	gcc lib/main.o -o bin/prog_principal.out -lm
+bin/prog_principal.out: lib/main.o lib/commande_vocale.o lib/image.o lib/objet.o lib/config.o
+	gcc lib/main.o lib/commande_vocale.o lib/image.o lib/objet.o lib/config.o -o bin/prog_principal.out -lm
+
+
 
 lib/main.o: src/main.c
-	gcc -c src/main.c -o lib/main.o -Wall -lm
+	gcc -c src/main.c -o lib/main.o -Wall -Iinclude -lm
+
+
+lib/commande_vocale.o: src/commande_vocale.c include/commande_vocale.h
+	gcc -c src/commande_vocale.c -o lib/commande_vocale.o -Wall -Iinclude -lm
+
 
 bin/prog_image.out: lib/main_image.o lib/image.o lib/objet.o lib/config.o
-	gcc lib/main_image.o lib/image.o lib/objet.o lib/config.o -o bin/prog_image.out -lm
+	gcc lib/main_image.o lib/image.o  lib/objet.o lib/config.o -o bin/prog_image.out -lm
 
 lib/main_image.o: src/main_image.c
 	gcc -c src/main_image.c -o lib/main_image.o -Wall -lm

@@ -123,10 +123,10 @@ void afficher_image_boites_englobantes(Image image, int delta) {
         trouver_coordonnees_objet(objet_courant, image);
         
         /* Initialisation des variables */
-        int i_min = get_x_dep(objet_courant) - delta;
-        int j_min = get_y_dep(objet_courant) - delta;
-        int i_max = get_x_arr(objet_courant) + delta;
-        int j_max = get_y_arr(objet_courant) + delta;
+        int i_min = get_i_min(objet_courant) - delta;
+        int j_min = get_j_min(objet_courant) - delta;
+        int i_max = get_i_max(objet_courant) + delta;
+        int j_max = get_j_max(objet_courant) + delta;
 
         /* Test si le cadre n'est pas trop grand */
         if (i_min < 0) i_min = 0;
@@ -376,9 +376,9 @@ int** quantifier_image(Image image) {
         for (int j=0 ; j<image->hauteur ; j++) {
 
             /* Remplissage du pixel courant */
-            pixel[0] = image->mat_rouge[i][j];
-            pixel[1] = image->mat_vert[i][j];
-            pixel[2] = image->mat_bleu[i][j];
+            pixel[0] = image->mat_rouge[i][j];  // R
+            pixel[1] = image->mat_vert[i][j];   // V
+            pixel[2] = image->mat_bleu[i][j];   // B
 
             /* Ajout du pixel quantifié à la matrice */
             mat_quantif[i][j] = quantifier_pixel(pixel);
