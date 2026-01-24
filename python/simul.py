@@ -53,13 +53,13 @@ def tracer_obstacles_piece(piece):
         tl.up()
         tl.width(obs['trait'])
         tl.color(obs['couleur'])
-        if obs['type'] == 'cercle':
+        if obs.get('type') == 'cercle':
             tl.goto(x, y - dim)
             tl.down()
             tl.begin_fill()
             tl.circle(dim)
             tl.end_fill()
-        elif obs['type'] == 'carré':
+        elif obs.get('type') == 'carré':
             tl.goto(x - dim/2, y + dim/2)
             tl.setheading(0)
             tl.down()
@@ -130,12 +130,25 @@ def initialiser_environnement():
     ajouter_ouverture(piece, ouverture)
 
     # Ajout des balles colorées
-    ajouter_obstacle(piece, {'nom': 'balle_rouge', 'type': 'cercle', 'centre': (-50, 50), 
-                             'dimension': 15, 'couleur': 'red', 'trait': 1})
-    ajouter_obstacle(piece, {'nom': 'balle_jaune', 'type': 'cercle', 'centre': (0, -80), 
-                             'dimension': 20, 'couleur': 'yellow', 'trait': 1})
-    ajouter_obstacle(piece, {'nom': 'balle_bleu', 'type': 'cercle', 'centre': (100, 40), 
-                             'dimension': 10, 'couleur': 'blue', 'trait': 1})
+    # Lire les informations des balles depuis le fichier txt
+    try:
+        with open('informations_balles.txt', 'r') as f:
+            for line in f:
+                line = line.strip()
+                if line:  # Ignorer les lignes vides
+                    x, y, couleur = line.split()
+                    x_turtle = int(y) * 2 - 300
+                    y_turtle = 300 - int(x) * 2
+                    ajouter_obstacle(piece, {
+                        'nom': f'balle_{couleur}',
+                        'type': 'cercle',
+                        'centre': (x_turtle, y_turtle),
+                        'dimension': 15,
+                        'couleur': couleur,
+                        'trait': 1
+                    })
+    except FileNotFoundError:
+        print("Fichier informations_balles.txt non trouvé")
     return piece
 
 def definir_mission_robot(ref_env):
@@ -178,10 +191,10 @@ robot = definir_mission_robot(env)
 # 5. Mettre à jour les données du robot (calcul interne)
 # executer_trajectoire(robot, env)
 
-print(f"Mission accomplie. Position finale de {robot['nom']} : {robot['pos_robot']}")
+#print(f"Mission accomplie. Position finale de {robot['nom']} : {robot['pos_robot']}")
 
 tl.hideturtle()
-# tl.exitonclick()
+#tl.exitonclick()
 
 
 if __name__ == "__main__":
