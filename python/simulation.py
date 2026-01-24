@@ -71,19 +71,22 @@ def tourner_progressif(robot, angle, direction):
 # FIND BALL (CORRIGÉ)
 # ======================================================
 
-def chercher_balle(robot, couleur=None):
+def chercher_balle(robot, env, couleur=None):
     print("[SIMULATION] Recherche de balle")
 
-    env = simul.initialiser_environnement()
     balles = env.get("obstacles", [])
+
+    print("[SIMULATION - TRACE] balles =", balles)
 
     if not balles:
         print("[SIMULATION] Aucune balle dans l'environnement")
         return
 
     # Traduction couleur EN → FR
-    if couleur:
-        couleur = COLOR_MAP.get(couleur, couleur)
+    # print("[SIMULATION - TRACE] AVANT -> couleur =", couleur)
+    # if couleur:
+    #     couleur = COLOR_MAP.get(couleur, couleur)
+    # print("[SIMULATION - TRACE] APRES -> couleur =", couleur)
 
     rx, ry = robot.t.position()
     cible = None
@@ -96,9 +99,10 @@ def chercher_balle(robot, couleur=None):
         if couleur and couleur not in nom:
             continue
 
-        dist = math.hypot(bx - rx, by - ry)
+        dist = math.hypot(bx - rx, by - ry) - 25
 
         if dist < dist_min:
+            print("OK !!!!!")
             dist_min = dist
             cible = b
 
@@ -122,7 +126,7 @@ def chercher_balle(robot, couleur=None):
 # APPLICATION ACTION
 # ======================================================
 
-def appliquer_action(ligne, robot):
+def appliquer_action(ligne, robot, env):
     parts = ligne.split()
     action = parts[0]
 
@@ -137,9 +141,9 @@ def appliquer_action(ligne, robot):
 
     elif action == "find_ball":
         if len(parts) > 1:
-            chercher_balle(robot, parts[1])
+            chercher_balle(robot, env, parts[1])
         else:
-            chercher_balle(robot)
+            chercher_balle(robot, env)
 
     elif action == "stop":
         return False
@@ -154,17 +158,17 @@ def appliquer_action(ligne, robot):
 # MAIN
 # ======================================================
 
-def main():
+def main(env):
     screen = turtle.Screen()
     screen.title("Simulation Robot – PFR")
     screen.bgcolor("white")
     screen.tracer(0)
 
-    simul.tracer_environnement(simul.initialiser_environnement())
+    simul.tracer_environnement(env)
 
     robot = Robot(start_x=0, start_y=-250, initial_heading=90)
 
-    print("[SIMULATION] Lecture des actions...")
+    print("\n[SIMULATION] Lecture des actions...")
     actions = lire_actions()
 
     if not actions:
@@ -173,7 +177,7 @@ def main():
         return
 
     for act in actions:
-        if not appliquer_action(act, robot):
+        if not appliquer_action(act, robot, env):
             break
         screen.update()
 
@@ -182,5 +186,7 @@ def main():
 
     turtle.mainloop()
 
+
 if __name__ == "__main__":
-    main()
+    env = simul.initialiser_environnement()
+    main(env)

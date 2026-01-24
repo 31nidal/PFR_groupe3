@@ -20,9 +20,6 @@ $(BIN): $(OBJ)
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-clean:
-	rm -f src/*.o
-
 fclean: clean
 	rm -f $(BIN)
 

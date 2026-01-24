@@ -132,7 +132,7 @@ def initialiser_environnement():
     # Ajout des balles colorées
     # Lire les informations des balles depuis le fichier txt
     try:
-        with open('informations_balles.txt', 'r') as f:
+        with open('python/informations_balles.txt', 'r') as f:
             for line in f:
                 line = line.strip()
                 if line:  # Ignorer les lignes vides
@@ -194,7 +194,7 @@ robot = definir_mission_robot(env)
 #print(f"Mission accomplie. Position finale de {robot['nom']} : {robot['pos_robot']}")
 
 tl.hideturtle()
-#tl.exitonclick()
+# tl.exitonclick()
 
 
 if __name__ == "__main__":
