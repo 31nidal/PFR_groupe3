@@ -53,7 +53,7 @@ Image lire_image(void) {
 
     if (fichier == NULL) {
         printf("Erreur : Impossible d'ouvrir le fichier %s\n", chemin);
-        exit(1);
+        exit(0);
     }
     printf("L'image IMG_%d.txt a été chargée.\n", numero_image);
     

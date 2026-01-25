@@ -137,8 +137,9 @@ def initialiser_environnement():
                 line = line.strip()
                 if line:  # Ignorer les lignes vides
                     x, y, couleur = line.split()
-                    x_turtle = int(y) * 2 - 300
-                    y_turtle = 300 - int(x) * 2
+                    rayon_balle = 15
+                    x_turtle = int(y) * 2 - 300 + rayon_balle
+                    y_turtle = 300 - int(x) * 2 - rayon_balle
                     ajouter_obstacle(piece, {
                         'nom': f'balle_{couleur}',
                         'type': 'cercle',

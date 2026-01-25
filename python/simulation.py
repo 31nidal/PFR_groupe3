@@ -96,10 +96,13 @@ def chercher_balle(robot, env, couleur=None):
         nom = b["nom"]          # ex: balle_rouge
         bx, by = b["centre"]
 
+        bx += 15
+        by -= 15
+
         if couleur and couleur not in nom:
             continue
 
-        dist = math.hypot(bx - rx, by - ry) - 25
+        dist = math.hypot(bx - rx, by - ry) - 30
 
         if dist < dist_min:
             dist_min = dist
@@ -110,6 +113,10 @@ def chercher_balle(robot, env, couleur=None):
         return
 
     bx, by = cible["centre"]
+
+    bx += 15
+    by -= 15
+
     dx = bx - rx
     dy = by - ry
 
