@@ -1,32 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "../include/commande_vocale.h"
+#include "../include/image.h"
+#include "../include/utils.h"
 
-#include "commande_vocale.h"
-
-#define CMD_FILE "commande.txt"
 #define PYTHON_CMD_VOC "python3 python/assistant_vocal.py"
 #define PYTHON_SIMU "python3 python/simulation.py"
 
-static void saisir_clavier(void)
-{
-    char buffer[512];
-
-    printf("Entrez votre commande :\n> ");
-    fgets(buffer, sizeof(buffer), stdin);
-
-    FILE *f = fopen(CMD_FILE, "w");
-    if (!f) {
-        perror("commande.txt");
-        return;
-    }
-
-    fputs(buffer, f);
-    fclose(f);
-}
-
-int main(void)
-{
+int main(void) {
     int choix = 0;
     int en_cours = 1;
 
@@ -34,12 +16,21 @@ int main(void)
     FILE *f = fopen("action.txt", "w");
     if (f) fclose(f);
     /* ================================================================= */
+    
+    /* Charger la configuration */
+    if (!charger_config("config/config.json")) {
+        return 1;
+    }
 
-    printf("=== SYSTEME DE COMMANDE ROBOT ===\n");
+    printf("\n===== CHOIX DE L'IMAGE A TRAITER =====\n");
+    Image image = lire_image();
+    trouver_informations_balles(image);
+
+    printf("\n===== SYSTEME DE COMMANDE ROBOT =====\n");
 
     while (en_cours) {
 
-        printf("\n--------  Menu  des actions  --------\n");
+        printf("\n-----  Menu  des commandes  -----\n");
         printf("1- Ecrire une commande (clavier)\n");
         printf("2- Parler (commande vocale)\n");
         printf("3- Lancer la simulation (turtle)\n");

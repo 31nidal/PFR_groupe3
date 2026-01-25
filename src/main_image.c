@@ -20,6 +20,8 @@ int main() {
     int distance_objet;
     int angle_objet;
 
+    printf("\nNombre d'objets sur l'image : %d\n", nb_objets);
+
     for (int k=1 ; k<nb_objets+1 ; k++) {
         printf("\n===== Objet %d =====\n", k);
         Objet objet_courant = init_objet(k);
@@ -38,7 +40,7 @@ int main() {
 
 
         printf("Direction : %s\n", direction_objet);
-        printf("Distance : %dm\n", distance_objet);
+        printf("Distance : %d px\n", distance_objet);
         printf("Angle : %d°\n", angle_objet);
     }
 

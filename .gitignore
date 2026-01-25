@@ -36,3 +36,6 @@ action.txt
 =======
 bin/*.out
 >>>>>>> main
+venv/
+*.o
+*.out
