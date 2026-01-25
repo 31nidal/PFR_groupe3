@@ -48,13 +48,15 @@ def effacer_actions():
 # MOUVEMENTS
 # ======================================================
 
-def avancer_progressif(robot, distance, sens=1):
+def avancer_progressif(robot, env, distance, sens=1):
     reste = distance
-    while reste > 0:
+    while reste > 0 and not detecter_mur(robot, env):
         pas = min(PAS_DISTANCE, reste)
         robot.t.forward(pas if sens == 1 else -pas)
         reste -= pas
         time.sleep(DELAI_ANIM)
+
+        rx, ry = robot.t.position()
 
 def tourner_progressif(robot, angle, direction):
     reste = angle
@@ -66,6 +68,30 @@ def tourner_progressif(robot, angle, direction):
             robot.t.right(pas)
         reste -= pas
         time.sleep(DELAI_ANIM)
+
+def detecter_ouverture(robot, env):
+    rx, ry = robot.t.position()
+    for ouv in env["ouvertures"]:
+        ouvx, ouvy = ouv["pos_porte"]
+        if ((abs(rx - ouvx) < 25) or (abs(ry - ouvy) < 25)):
+            return True
+    return False
+
+def detecter_mur(robot, env):
+    marge = 25
+    
+    rx, ry = robot.t.position()
+    envx, envy = env["dimensions"]
+
+    envx //= 2
+    envy //= 2
+
+    if (rx > (envx-marge) or rx < (-envx+marge) or ry > (envy-marge) or ry < (-envy+marge)) and not detecter_ouverture(robot, env):
+        print("[SIMULATION] Déplacement impossible : mur en approche !")
+        return True
+    else:
+        return False
+
 
 # ======================================================
 # FIND BALL (CORRIGÉ)
@@ -123,7 +149,7 @@ def chercher_balle(robot, env, couleur=None):
     angle = math.degrees(math.atan2(dy, dx))
     robot.t.setheading(angle)
 
-    avancer_progressif(robot, int(dist_min))
+    avancer_progressif(robot, env, int(dist_min))
 
     robot.t.dot(14, cible["couleur"])
     print(f"[SIMULATION] Balle atteinte : {cible['nom']}")
@@ -140,10 +166,10 @@ def appliquer_action(ligne, robot, env):
         if len(parts) > 2 and parts[1] == "to":
             robot.aller_a(int(parts[2]), int(parts[3]))
         else:
-            avancer_progressif(robot, int(parts[1]))
+            avancer_progressif(robot, env, int(parts[1]))
 
     elif action == "retreat":
-        avancer_progressif(robot, int(parts[1]), sens=-1)
+        avancer_progressif(robot, env, int(parts[1]), sens=-1)
 
     elif action == "turn":
         tourner_progressif(robot, int(parts[2]), parts[1])
