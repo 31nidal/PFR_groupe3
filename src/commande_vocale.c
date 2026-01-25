@@ -204,9 +204,24 @@ void traiter_commande(void)
             if (!json_match(jsons[j], words[i], key))
                 continue;
 
-            /* AVANCE / RECULE */
             if (!strcmp(key, "advance") || !strcmp(key, "retreat")) {
 
+                /* advance to X Y */
+                if (i + 3 < n) {
+                    char tmp[64];
+                    if (json_match(jsons[j], words[i + 1], tmp) && !strcmp(tmp, "to") &&
+                        is_number(words[i + 2]) && is_number(words[i + 3])) {
+
+                        int x = atoi(words[i + 2]);
+                        int y = atoi(words[i + 3]);
+
+                        fprintf(out, "%s to %d %d\n", key, x, y);
+                        printf("[ACTION] %s to %d %d\n", key, x, y);
+                        continue;
+                    }
+                }
+
+                /* advance distance */
                 int dist = DEFAULT_DISTANCE;
 
                 for (int k = i; k < n - 1; k++) {
@@ -220,6 +235,7 @@ void traiter_commande(void)
                 fprintf(out, "%s %d meters\n", key, dist);
                 printf("[ACTION] %s %d meters\n", key, dist);
             }
+
 
             /* TOURNER */
             if (!strcmp(key, "turn")) {
@@ -245,6 +261,7 @@ void traiter_commande(void)
                 fprintf(out, "turn %s %d degrees\n", dir, angle);
                 printf("[ACTION] turn %s %d degrees\n", dir, angle);
             }
+
         }
     }
 

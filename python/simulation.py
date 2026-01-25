@@ -137,7 +137,10 @@ def appliquer_action(ligne, robot, env):
     action = parts[0]
 
     if action == "advance":
-        avancer_progressif(robot, int(parts[1]))
+        if len(parts) > 2 and parts[1] == "to":
+            robot.aller_a(int(parts[2]), int(parts[3]))
+        else:
+            avancer_progressif(robot, int(parts[1]))
 
     elif action == "retreat":
         avancer_progressif(robot, int(parts[1]), sens=-1)
