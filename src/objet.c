@@ -389,7 +389,7 @@ int get_j_max(Objet objet) {
 
 
 void commande_balle(const char* direction, int angle, int distance) {
-  FILE* f = fopen("action.txt", "w");
+  FILE* f = fopen("data/action.txt", "w");
   if (!f) return;
 
   if (strcmp(direction, "milieu") == 0) {
@@ -409,14 +409,14 @@ void commande_balle(const char* direction, int angle, int distance) {
 
 void trouver_informations_balles(Image image) {
   /* Ouverture du fichier informations_balles.txt */
-  FILE* f = fopen("python/informations_balles.txt", "w");
+  FILE* f = fopen("data/informations_balles.txt", "w");
   if (!f) return;
 
   int i_centre_balle;
   int j_centre_balle;
 
   int nb_objets = nombre_objets_image(image);
-  
+
   /* Pour chaque objet de l'image */
   for (int k=1 ; k<nb_objets+1 ; k++) {
     Objet objet_courant = init_objet(k);

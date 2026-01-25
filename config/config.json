@@ -10,6 +10,7 @@
         "distance_max_m": 20
     },
     "image_detection": {
+        "intentsite_couleur": {
             "intensite_min_rouge": 40,
             "intensite_min_vert": 40,
             "intensite_min_bleu": 40

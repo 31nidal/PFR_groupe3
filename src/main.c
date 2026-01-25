@@ -2,7 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include "../include/commande_vocale.h"
+#include "../include/config.h"
 #include "../include/image.h"
+#include "../include/objet.h"
 #include "../include/utils.h"
 
 #define PYTHON_CMD_VOC "python3 python/assistant_vocal.py"
@@ -13,10 +15,10 @@ int main(void) {
     int en_cours = 1;
 
     /* ================= RESET action.txt AU DÉMARRAGE ================= */
-    FILE *f = fopen("action.txt", "w");
+    FILE *f = fopen("data/action.txt", "w");
     if (f) fclose(f);
     /* ================================================================= */
-    
+
     /* Charger la configuration */
     if (!charger_config("config/config.json")) {
         return 1;

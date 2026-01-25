@@ -12,7 +12,7 @@ void saisir_clavier(void) {
 
     FILE *f = fopen(CMD_FILE, "w");
     if (!f) {
-        perror("commande.txt");
+        perror("data/commande.txt");
         return;
     }
 

@@ -3,8 +3,8 @@
 #include <stdlib.h>
 
 /* ===================== CONFIG ===================== */
-#define CMD_FILE   "commande.txt"
-#define OUT_FILE   "action.txt"
+#define CMD_FILE   "data/commande.txt"
+#define OUT_FILE   "data/action.txt"
 
 #define DEFAULT_DISTANCE 50
 #define DEFAULT_ANGLE    90

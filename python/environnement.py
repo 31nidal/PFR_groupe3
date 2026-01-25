@@ -132,7 +132,7 @@ def initialiser_environnement():
     # Ajout des balles colorées
     # Lire les informations des balles depuis le fichier txt
     try:
-        with open('python/informations_balles.txt', 'r') as f:
+        with open('data/informations_balles.txt', 'r') as f:
             for line in f:
                 line = line.strip()
                 if line:  # Ignorer les lignes vides
@@ -175,27 +175,14 @@ def definir_mission_robot(ref_env):
     return robot
 
 # 5. PROGRAMME PRINCIPAL
-
-# 1. Créer l'univers
-env = initialiser_environnement()
-
-# 2. Dessiner l'univers (murs, porte, balles)
-tracer_environnement(env)
-
-# 3. Préparer le robot et sa route
-robot = definir_mission_robot(env)
-
-# 4. Tracer le mouvement sur l'écran
-# tracer_trajectoire_robot(robot)
-
-# 5. Mettre à jour les données du robot (calcul interne)
-# executer_trajectoire(robot, env)
-
-#print(f"Mission accomplie. Position finale de {robot['nom']} : {robot['pos_robot']}")
-
-tl.hideturtle()
-# tl.exitonclick()
-
-
 if __name__ == "__main__":
-    pass  # Ne rien faire si exécuté directement
+    # 1. Créer l'univers
+    env = initialiser_environnement()
+    
+    # 2. Dessiner l'univers (murs, porte, balles)
+    tracer_environnement(env)
+    
+    # 3. Préparer le robot et sa route
+    robot = definir_mission_robot(env)
+    
+    tl.hideturtle()

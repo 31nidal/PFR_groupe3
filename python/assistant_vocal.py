@@ -1,6 +1,6 @@
 import speech_recognition as sr
 
-FICHIER_COMMANDE = "commande.txt"
+FICHIER_COMMANDE = "data/commande.txt"
 
 def ecrire_commande(texte):
     with open(FICHIER_COMMANDE, "w", encoding="utf-8") as f:

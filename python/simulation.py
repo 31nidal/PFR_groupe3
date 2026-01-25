@@ -3,14 +3,14 @@ import time
 import os
 import math
 from robot import Robot
-import simul
+import environnement
 
 # ======================================================
 # CHEMIN VERS action.txt
 # ======================================================
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-FICHIER_ACTION = os.path.join(BASE_DIR, "..", "action.txt")
+FICHIER_ACTION = os.path.join(BASE_DIR, "..", "data/action.txt")
 
 # ======================================================
 # PARAMÈTRES
@@ -76,7 +76,7 @@ def chercher_balle(robot, env, couleur=None):
 
     balles = env.get("obstacles", [])
 
-    print("[SIMULATION - TRACE] balles =", balles)
+    # print("[SIMULATION - TRACE] balles =", balles)
 
     if not balles:
         print("[SIMULATION] Aucune balle dans l'environnement")
@@ -102,7 +102,6 @@ def chercher_balle(robot, env, couleur=None):
         dist = math.hypot(bx - rx, by - ry) - 25
 
         if dist < dist_min:
-            print("OK !!!!!")
             dist_min = dist
             cible = b
 
@@ -164,7 +163,7 @@ def main(env):
     screen.bgcolor("white")
     screen.tracer(0)
 
-    simul.tracer_environnement(env)
+    environnement.tracer_environnement(env)
 
     robot = Robot(start_x=0, start_y=-250, initial_heading=90)
 
@@ -188,5 +187,5 @@ def main(env):
 
 
 if __name__ == "__main__":
-    env = simul.initialiser_environnement()
+    env = environnement.initialiser_environnement()
     main(env)

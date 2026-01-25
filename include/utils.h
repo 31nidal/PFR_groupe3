@@ -1,7 +1,7 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-#define CMD_FILE "commande.txt"
+#define CMD_FILE "data/commande.txt"
 
 void saisir_clavier(void);
 
