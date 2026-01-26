@@ -102,7 +102,6 @@ static int is_meter_unit(char **words, int i, int n,
 {
     if (i + 1 >= n) return 0;
 
-    /* Tolérance directe */
     if (!strcmp(words[i + 1], "m"))
         return 1;
 
@@ -126,7 +125,6 @@ static int detect_find_ball(char **words, int n,
 
     for (int i = 0; i < n; i++) {
 
-        /* Tolérance "trouve / trouver / trouves" */
         if (starts_with(words[i], "trouv"))
             found = 1;
 
@@ -156,11 +154,9 @@ void traiter_commande(void)
     char phrase[MAX_CMD];
     char jsons[JSON_COUNT][MAX_JSON];
 
-    /* Charger JSON */
     for (size_t i = 0; i < JSON_COUNT; i++)
         if (!load_file(json_files[i], jsons[i])) return;
 
-    /* Lire commande */
     FILE *f = fopen(CMD_FILE, "r");
     if (!f) return;
     if (!fgets(phrase, MAX_CMD, f)) {
@@ -174,7 +170,6 @@ void traiter_commande(void)
 
     printf("[TRACE] Phrase : %s\n", phrase);
 
-    /* Découpage */
     char *words[MAX_WORDS];
     int n = 0;
     char *tok = strtok(phrase, " ");
@@ -195,7 +190,7 @@ void traiter_commande(void)
         return;
     }
 
-    /* ===== COMMANDES CLASSIQUES ===== */
+    /* ===== COMMANDES ===== */
     for (int i = 0; i < n; i++) {
 
         char key[64];
@@ -204,27 +199,12 @@ void traiter_commande(void)
             if (!json_match(jsons[j], words[i], key))
                 continue;
 
+            /* ===== AVANCE / RECULE ===== */
             if (!strcmp(key, "advance") || !strcmp(key, "retreat")) {
 
-                /* advance to X Y */
-                if (i + 3 < n) {
-                    char tmp[64];
-                    if (json_match(jsons[j], words[i + 1], tmp) && !strcmp(tmp, "to") &&
-                        is_number(words[i + 2]) && is_number(words[i + 3])) {
-
-                        int x = atoi(words[i + 2]);
-                        int y = atoi(words[i + 3]);
-
-                        fprintf(out, "%s to %d %d\n", key, x, y);
-                        printf("[ACTION] %s to %d %d\n", key, x, y);
-                        continue;
-                    }
-                }
-
-                /* advance distance */
                 int dist = DEFAULT_DISTANCE;
 
-                for (int k = i; k < n - 1; k++) {
+                for (int k = i + 1; k < n - 1; k++) {
                     if (is_number(words[k]) &&
                         is_meter_unit(words, k, n, jsons)) {
                         dist = atoi(words[k]);
@@ -236,17 +216,18 @@ void traiter_commande(void)
                 printf("[ACTION] %s %d meters\n", key, dist);
             }
 
-
-            /* TOURNER */
+            /* ===== TOURNER ===== */
             if (!strcmp(key, "turn")) {
 
                 char dir[16] = "right";
                 int angle = DEFAULT_ANGLE;
 
-                for (int k = i; k < n; k++) {
+                for (int k = i + 1; k < n; k++) {
 
-                    if (is_number(words[k]))
+                    if (is_number(words[k])) {
                         angle = atoi(words[k]);
+                        break;
+                    }
 
                     char tmp[64];
                     for (size_t l = 0; l < JSON_COUNT; l++) {
@@ -261,7 +242,6 @@ void traiter_commande(void)
                 fprintf(out, "turn %s %d degrees\n", dir, angle);
                 printf("[ACTION] turn %s %d degrees\n", dir, angle);
             }
-
         }
     }
 
