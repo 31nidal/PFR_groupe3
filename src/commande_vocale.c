@@ -9,6 +9,7 @@
 #define DEFAULT_DISTANCE 50
 #define DEFAULT_ANGLE    90
 
+
 #define MAX_CMD    512
 #define MAX_JSON   20000
 #define MAX_WORDS  128

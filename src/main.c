@@ -7,7 +7,7 @@
 #include "../include/objet.h"
 #include "../include/utils.h"
 
-#define PYTHON_CMD_VOC "python3 python/assistant_vocal.py"
+#define PYTHON_CMD_VOC "python python/assistant_vocal.py"
 #define PYTHON_SIMU "python3 python/simulation.py"
 
 int main(void) {

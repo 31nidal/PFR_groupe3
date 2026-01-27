@@ -1,6 +1,7 @@
 # ================= CONFIG =================
 CC      = gcc
-CFLAGS  = -Wall -Wextra -Iinclude -lm
+CFLAGS  = -Wall -Wextra -Iinclude 
+LDFLAGS = -lm
 
 # ================= EXECUTION =================
 # Lance le programme principal
