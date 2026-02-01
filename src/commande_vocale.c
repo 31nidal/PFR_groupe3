@@ -2,42 +2,60 @@
 #include <string.h>
 #include <stdlib.h>
 
-/* ===================== CONFIG ===================== */
+/* =====================================================
+   CONFIGURATION GÉNÉRALE
+   ===================================================== */
+
+/* Fichier contenant la commande vocale transcrite */
 #define CMD_FILE   "data/commande.txt"
+
+/* Fichier de sortie contenant l’action interprétée */
 #define OUT_FILE   "data/action.txt"
 
+/* Valeurs par défaut si aucun paramètre n’est précisé */
 #define DEFAULT_DISTANCE 50
 #define DEFAULT_ANGLE    90
 
+/* Tailles maximales */
+#define MAX_CMD    512      // Longueur max d’une commande
+#define MAX_JSON   20000    // Taille max d’un fichier JSON
+#define MAX_WORDS  128      // Nombre max de mots analysés
 
-#define MAX_CMD    512
-#define MAX_JSON   20000
-#define MAX_WORDS  128
+/* =====================================================
+   FICHIERS JSON (MULTI-LANGUES)
+   ===================================================== */
 
-/* ===================== JSON FILES ===================== */
+/* Fichiers de configuration des commandes selon la langue */
 static const char *json_files[] = {
     "config/fr.json",
     "config/en.json",
     "config/es.json"
 };
 
+/* Nombre total de fichiers JSON */
 #define JSON_COUNT (sizeof(json_files) / sizeof(json_files[0]))
 
-/* ===================== UTILITAIRES ===================== */
+/* =====================================================
+   FONCTIONS UTILITAIRES
+   ===================================================== */
 
+/* Convertit un caractère majuscule en minuscule */
 static char my_tolower(char c) {
     if (c >= 'A' && c <= 'Z') return c + ('a' - 'A');
     return c;
 }
 
+/* Vérifie si un caractère est un chiffre */
 static int my_isdigit(char c) {
     return (c >= '0' && c <= '9');
 }
 
+/* Met toute une chaîne en minuscules */
 static void to_lower(char *s) {
     for (; *s; s++) *s = my_tolower(*s);
 }
 
+/* Vérifie si une chaîne représente un nombre entier */
 static int is_number(const char *s) {
     if (!*s) return 0;
     for (; *s; s++)
@@ -46,6 +64,7 @@ static int is_number(const char *s) {
     return 1;
 }
 
+/* Charge le contenu d’un fichier dans un buffer */
 static int load_file(const char *path, char *buf) {
     FILE *f = fopen(path, "r");
     if (!f) return 0;
@@ -55,12 +74,22 @@ static int load_file(const char *path, char *buf) {
     return 1;
 }
 
+/* Vérifie si une chaîne commence par un préfixe donné */
 static int starts_with(const char *s, const char *prefix) {
     return strncmp(s, prefix, strlen(prefix)) == 0;
 }
 
-/* ===================== JSON MATCH ===================== */
+/* =====================================================
+   RECHERCHE DE COMMANDES DANS LE JSON
+   ===================================================== */
 
+/*
+   Recherche si une expression correspond à une commande
+   définie dans un fichier JSON.
+   - json      : contenu du fichier JSON
+   - expr      : mot à rechercher
+   - key_out   : clé de commande associée
+*/
 static int json_match(const char *json,
                       const char *expr,
                       char *key_out)
@@ -96,8 +125,14 @@ static int json_match(const char *json,
     return 0;
 }
 
-/* ===================== UNITÉS ===================== */
+/* =====================================================
+   GESTION DES UNITÉS
+   ===================================================== */
 
+/*
+   Vérifie si un nombre est suivi d’une unité de type mètre
+   (ex : "5 m" ou "5 meters" selon la langue)
+*/
 static int is_meter_unit(char **words, int i, int n,
                          char jsons[JSON_COUNT][MAX_JSON])
 {
@@ -116,8 +151,14 @@ static int is_meter_unit(char **words, int i, int n,
     return 0;
 }
 
-/* ===================== FIND BALL ===================== */
+/* =====================================================
+   DÉTECTION DE LA COMMANDE "TROUVER BALLE"
+   ===================================================== */
 
+/*
+   Détecte une commande de type "trouver la balle"
+   avec identification de la couleur
+*/
 static int detect_find_ball(char **words, int n,
                             char jsons[JSON_COUNT][MAX_JSON],
                             char *color_out)
@@ -148,16 +189,27 @@ static int detect_find_ball(char **words, int n,
     return found && ball && *color_out;
 }
 
-/* ===================== PIPELINE ===================== */
+/* =====================================================
+   PIPELINE PRINCIPAL
+   ===================================================== */
 
+/*
+   Fonction principale de traitement de la commande vocale :
+   - Lecture de la commande
+   - Analyse des mots
+   - Interprétation
+   - Écriture de l’action à exécuter
+*/
 void traiter_commande(void)
 {
     char phrase[MAX_CMD];
     char jsons[JSON_COUNT][MAX_JSON];
 
+    /* Chargement des fichiers JSON */
     for (size_t i = 0; i < JSON_COUNT; i++)
         if (!load_file(json_files[i], jsons[i])) return;
 
+    /* Lecture de la commande */
     FILE *f = fopen(CMD_FILE, "r");
     if (!f) return;
     if (!fgets(phrase, MAX_CMD, f)) {
@@ -166,11 +218,13 @@ void traiter_commande(void)
     }
     fclose(f);
 
+    /* Normalisation de la commande */
     phrase[strcspn(phrase, "\n")] = 0;
     to_lower(phrase);
 
     printf("[TRACE] Phrase : %s\n", phrase);
 
+    /* Découpage de la phrase en mots */
     char *words[MAX_WORDS];
     int n = 0;
     char *tok = strtok(phrase, " ");
@@ -179,10 +233,11 @@ void traiter_commande(void)
         tok = strtok(NULL, " ");
     }
 
+    /* Ouverture du fichier de sortie */
     FILE *out = fopen(OUT_FILE, "a");
     if (!out) return;
 
-    /* ===== PRIORITÉ FIND BALL ===== */
+    /* ===== PRIORITÉ : TROUVER BALLE ===== */
     char color[16] = "";
     if (detect_find_ball(words, n, jsons, color)) {
         fprintf(out, "find_ball %s\n", color);
@@ -191,7 +246,7 @@ void traiter_commande(void)
         return;
     }
 
-    /* ===== COMMANDES ===== */
+    /* ===== ANALYSE DES AUTRES COMMANDES ===== */
     for (int i = 0; i < n; i++) {
 
         char key[64];
@@ -200,7 +255,7 @@ void traiter_commande(void)
             if (!json_match(jsons[j], words[i], key))
                 continue;
 
-            /* ===== AVANCE / RECULE ===== */
+            /* ===== AVANCER / RECULER ===== */
             if (!strcmp(key, "advance") || !strcmp(key, "retreat")) {
 
                 int dist = DEFAULT_DISTANCE;
