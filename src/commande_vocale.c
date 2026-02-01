@@ -1,10 +1,12 @@
+// Fichier : reconnaissance_vocale.c
+// Rôle : Traitement de la commande vocale et interprétation
+// Auteurs : Yasmine BEN LTAIEF, Nidhal YAHYAOUI
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 
-/* =====================================================
-   CONFIGURATION GÉNÉRALE
-   ===================================================== */
+
 
 /* Fichier contenant la commande vocale transcrite */
 #define CMD_FILE   "data/commande.txt"
@@ -21,9 +23,7 @@
 #define MAX_JSON   20000    // Taille max d’un fichier JSON
 #define MAX_WORDS  128      // Nombre max de mots analysés
 
-/* =====================================================
-   FICHIERS JSON (MULTI-LANGUES)
-   ===================================================== */
+
 
 /* Fichiers de configuration des commandes selon la langue */
 static const char *json_files[] = {
@@ -35,9 +35,7 @@ static const char *json_files[] = {
 /* Nombre total de fichiers JSON */
 #define JSON_COUNT (sizeof(json_files) / sizeof(json_files[0]))
 
-/* =====================================================
-   FONCTIONS UTILITAIRES
-   ===================================================== */
+
 
 /* Convertit un caractère majuscule en minuscule */
 static char my_tolower(char c) {
@@ -79,9 +77,7 @@ static int starts_with(const char *s, const char *prefix) {
     return strncmp(s, prefix, strlen(prefix)) == 0;
 }
 
-/* =====================================================
-   RECHERCHE DE COMMANDES DANS LE JSON
-   ===================================================== */
+
 
 /*
    Recherche si une expression correspond à une commande
@@ -125,9 +121,7 @@ static int json_match(const char *json,
     return 0;
 }
 
-/* =====================================================
-   GESTION DES UNITÉS
-   ===================================================== */
+
 
 /*
    Vérifie si un nombre est suivi d’une unité de type mètre
@@ -151,9 +145,7 @@ static int is_meter_unit(char **words, int i, int n,
     return 0;
 }
 
-/* =====================================================
-   DÉTECTION DE LA COMMANDE "TROUVER BALLE"
-   ===================================================== */
+
 
 /*
    Détecte une commande de type "trouver la balle"
@@ -189,9 +181,7 @@ static int detect_find_ball(char **words, int n,
     return found && ball && *color_out;
 }
 
-/* =====================================================
-   PIPELINE PRINCIPAL
-   ===================================================== */
+
 
 /*
    Fonction principale de traitement de la commande vocale :
