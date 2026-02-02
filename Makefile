@@ -1,3 +1,8 @@
+# ================ EN TÊTE ================
+# FICHIER: Makefile
+# AUTEURS: GRELET Thomas, YAHYAOUI Nidal
+# RÔLE: Compiler l'ensemble des fichiers compilables pour en créer des exécutables
+
 # ================= CONFIG =================
 CC      = gcc
 CFLAGS  = -Wall -Wextra -Iinclude 

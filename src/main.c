@@ -1,3 +1,8 @@
+/* FICHIER: main.c
+*  AUTEURS: GRELET Thomas, YAHYAOUI Nidal
+*  RÔLE: Point d'entrée du programme principal (intégration)
+**/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

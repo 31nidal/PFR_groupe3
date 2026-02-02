@@ -1,5 +1,4 @@
 {
-<<<<<<< HEAD
     "general_parameters": {
         "language_name": "Français"
     },
@@ -51,10 +50,9 @@
         "found": ["trouver", "cherche", "cherches", "trouves", "découvre", "découvres", "localise", "localises"],
         "ball": ["balle", "ballon", "sphère"],
         "red": ["rouge", "rouge foncé", "cramoisi"],
-        "blue": ["bleue", "bleu clair", "azur"],
+        "blue": ["bleu", "bleu clair", "azur", "bleue"],
         "yellow": ["jaune", "jaune vif", "doré"],
-        "green": ["vert", "vert foncé", "émeraude"]
-=======
+        "green": ["vert", "vert foncé", "émeraude"],
     "paramètres_généraux": {
         "nom_langue": "Français"
     },

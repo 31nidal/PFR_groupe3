@@ -1,3 +1,8 @@
+/* FICHIER: utils.c
+*  AUTEURS: GRELET Thomas, DEVAUD Antoine, YAHYAOUI Nidal
+*  RÔLE: Définition des fonctions utilitaires
+**/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

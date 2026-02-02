@@ -1,3 +1,8 @@
+/* FICHIER: objet.c
+*  AUTEUR: GRELET Thomas
+*  RÔLE: Analyse d'objet : coordonnées, forme, couleur
+**/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -358,35 +363,6 @@ int trouver_angle_objet(Objet objet, Image image) {
 }
 
 
-Couleur get_couleur_objet(Objet objet) {
-  return objet->couleur;
-}
-
-
-char* get_nature_forme_objet(Objet objet) {
-  return objet->nature_forme;
-}
-
-
-int get_i_min(Objet objet) {
-  return objet->i_min;
-}
-
-
-int get_j_min(Objet objet) {
-  return objet->j_min;
-}
-
-
-int get_i_max(Objet objet) {
-  return objet->i_max;
-}
-
-
-int get_j_max(Objet objet) {
-  return objet->j_max;
-}
-
 
 void commande_balle(const char* direction, int angle, int distance) {
   FILE* f = fopen("data/action.txt", "w");
@@ -446,4 +422,34 @@ void trouver_informations_balles(Image image) {
 
   /* Fermeture du fichier */
   fclose(f);
+}
+
+
+Couleur get_couleur_objet(Objet objet) {
+  return objet->couleur;
+}
+
+
+char* get_nature_forme_objet(Objet objet) {
+  return objet->nature_forme;
+}
+
+
+int get_i_min(Objet objet) {
+  return objet->i_min;
+}
+
+
+int get_j_min(Objet objet) {
+  return objet->j_min;
+}
+
+
+int get_i_max(Objet objet) {
+  return objet->i_max;
+}
+
+
+int get_j_max(Objet objet) {
+  return objet->j_max;
 }

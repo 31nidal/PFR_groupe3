@@ -1,4 +1,8 @@
-// Auteurs : Yasmine BEN LTAIEF, Nidhal YAHYAOUI
+/* FICHIER: commande_vocale.h
+*  AUTEURS: YAHYAOUI Nidal, BEN LTAIEF Yasmine
+*  RÔLE: Déclaration des fonctions de traitement de la commande vocale
+**/
+
 #ifndef COMMANDE_VOCALE_H
 #define COMMANDE_VOCALE_H
 

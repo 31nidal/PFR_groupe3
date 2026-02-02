@@ -1,6 +1,7 @@
-// Fichier : reconnaissance_vocale.c
-// Rôle : Traitement de la commande vocale et interprétation
-// Auteurs : Yasmine BEN LTAIEF, Nidhal YAHYAOUI
+/* FICHIER: commande_vocale.c
+*  AUTEURS: YAHYAOUI Nidal, BEN LTAIEF Yasmine
+*  RÔLE: Traitement de la commande vocale et interprétation
+**/
 
 #include <stdio.h>
 #include <string.h>

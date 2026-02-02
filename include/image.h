@@ -1,3 +1,8 @@
+/* FICHIER: image.h
+*  AUTEUR: GRELET Thomas, DEVAUD Antoine
+*  RÔLE: Déclaration des fonctions d'analyse et de transformation d'image
+**/
+
 #ifndef IMAGE_H
 #define IMAGE_H
 
@@ -57,9 +62,6 @@ Histogramme histogramme_image(Image image);
 
 /* Retourne le nombre d'objets présents sur une image */
 int nombre_objets_image(Image image);
-
-/* à coder */
-Couleur pixel_vers_couleur(int pixel[3], int seuil);
 
 /* getteurs */
 int get_largeur(Image image);

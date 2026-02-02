@@ -56,8 +56,6 @@ def avancer_progressif(robot, env, distance, sens=1):
         reste -= pas
         time.sleep(DELAI_ANIM)
 
-        rx, ry = robot.t.position()
-
 def tourner_progressif(robot, angle, direction):
     reste = angle
     while reste > 0:
@@ -78,7 +76,7 @@ def detecter_ouverture(robot, env):
     return False
 
 def detecter_mur(robot, env):
-    marge = 25
+    marge = 40
     
     rx, ry = robot.t.position()
     envx, envy = env["dimensions"]

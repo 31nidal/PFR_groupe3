@@ -1,3 +1,8 @@
+/* FICHIER: objet.h
+*  AUTEUR: GRELET Thomas, DEVAUD Antoine
+*  RÔLE: Déclaration des fonctions d'analyse d'objets
+**/
+
 #ifndef OBJET_H
 #define OBJET_H
 
@@ -40,6 +45,12 @@ int trouver_distance_objet(Objet objet, Image image);
 /* Trouve l'angle réelle en dégré (approximation) entre la prise de la photo et un objet */
 int trouver_angle_objet(Objet objet, Image image);
 
+/* Ecris dans le fichier informations_balles.txt les informations (centre et couleur) de chaque balle sur une image passée en paramètre */
+void trouver_informations_balles(Image image);
+
+/* Ecris dans le fichier action.txt la commande pour avancer jusqu'à une balle */
+void commande_balle(const char* direction, int angle, int distance);
+
 /* getteurs */
 Couleur get_couleur_objet(Objet objet);
 char* get_nature_forme_objet(Objet objet);
@@ -47,11 +58,5 @@ int get_i_min(Objet objet);
 int get_j_min(Objet objet);
 int get_i_max(Objet objet);
 int get_j_max(Objet objet);
-
-
-void commande_balle(const char* direction, int angle, int distance);
-
-
-void trouver_informations_balles(Image image);
 
 #endif
