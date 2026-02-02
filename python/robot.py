@@ -1,7 +1,7 @@
 # =======================EN TÊTE=====================================
 # FICHIER: robot.py
 # AUTEUR: BACHAA Hajar
-# RÔLE: Définition de la classe Robot (Programmation Orientée Objet)
+# RÔLE: Définition de la classe Robot
 #       Gère les mouvements, l'affichage graphique et
 #       l'interaction multilingue du robot.
 # ===================================================================
