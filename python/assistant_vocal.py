@@ -1,3 +1,10 @@
+# =======================EN TÊTE=====================================
+# FICHIER: assistant_vocal.py
+# AUTEUR: YAHYAOUI Nidal
+# RÔLE: Implémentation d'un assistant vocal pour capturer les commandes vocales
+#       et les écrire dans un fichier texte pour une utilisation ultérieure.
+# ===================================================================
+
 import speech_recognition as sr
 
 FICHIER_COMMANDE = "data/commande.txt"

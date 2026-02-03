@@ -1,6 +1,6 @@
 # =======================EN TÊTE=====================================
 # FICHIER: robot.py
-# AUTEUR: BACHAA Hajar
+# AUTEURS: BACHAA Hajar, DEVAUD Antoine
 # RÔLE: Définition de la classe Robot
 #       Gère les mouvements, l'affichage graphique et
 #       l'interaction multilingue du robot.
