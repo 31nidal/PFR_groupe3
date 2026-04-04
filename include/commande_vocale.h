@@ -1,5 +1,5 @@
 /* FICHIER: commande_vocale.h
-*  AUTEURS: YAHYAOUI Nidal, BEN LTAIEF Yasmine
+*  AUTEURS: YAHYAOUI Nidal
 *  RÔLE: Déclaration des fonctions de traitement de la commande vocale
 **/
 

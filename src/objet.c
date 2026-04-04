@@ -1,5 +1,4 @@
 /* FICHIER: objet.c
-*  AUTEUR: GRELET Thomas
 *  RÔLE: Analyse d'objet : coordonnées, forme, couleur
 **/
 

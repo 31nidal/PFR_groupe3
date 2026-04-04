@@ -1,5 +1,4 @@
 /* FICHIER: utils.h
-*  AUTEUR: GRELET Thomas, DEVAUD Antoine, YAHYAOUI Nidal
 *  RÔLE: Déclaration des fonctions utilitaires
 **/
 

@@ -1,5 +1,4 @@
 /* FICHIER: utils.c
-*  AUTEURS: GRELET Thomas, DEVAUD Antoine, YAHYAOUI Nidal
 *  RÔLE: Définition des fonctions utilitaires
 **/
 

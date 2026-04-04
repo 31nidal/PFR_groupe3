@@ -1,5 +1,4 @@
 /* FICHIER: main.c
-*  AUTEUR: GRELET Thomas, YAHYAOUI Nidal
 *  RÔLE: Point d'entrée du programme image, permet d'effectuer les test des différents traitements
 **/
 

@@ -1,5 +1,4 @@
 /* FICHIER: main.c
-*  AUTEURS: GRELET Thomas, YAHYAOUI Nidal
 *  RÔLE: Point d'entrée du programme principal (intégration)
 **/
 

@@ -1,5 +1,4 @@
 /* FICHIER: objet.h
-*  AUTEUR: GRELET Thomas, DEVAUD Antoine
 *  RÔLE: Déclaration des fonctions d'analyse d'objets
 **/
 

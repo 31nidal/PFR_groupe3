@@ -1,5 +1,4 @@
 /* FICHIER: test_json.c
-*  AUTEUR: DEVAUD Antoine
 *  RÔLE: Permet de tester les différentes fonctions de lectures des JSON
 **/
 

@@ -1,5 +1,4 @@
 /* FICHIER: image.c
-*  AUTEUR: GRELET Thomas
 *  RÔLE: Analyse et transformation d'image : binarisation, labellisation, histogramme, quantification
 **/
 

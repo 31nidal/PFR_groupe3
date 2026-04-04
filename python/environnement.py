@@ -1,6 +1,5 @@
 # =======================EN TÊTE=====================================
 # FICHIER: environnement.py
-# AUTEURS: BACHAA Hajar, DEVAUD Antoine
 # RÔLE: Création et gestion de l'environnement du robot,
 #       y compris les pièces, ouvertures, obstacles,
 # ===================================================================

@@ -1,6 +1,5 @@
 # =======================EN TÊTE=====================================
 # FICHIER: test_cas_utilisation.py
-# AUTEUR: BACHAA Hajar
 # RÔLE: Tests des cas d'utilisation pour la simulation de déplacement du robot.
 # ===================================================================
 
