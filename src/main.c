@@ -14,6 +14,7 @@
 
 #define PYTHON_CMD_VOC "python python/assistant_vocal.py"
 #define PYTHON_SIMU "python3 python/simulation.py"
+#define PYTHON_PILOTE "python3 python/pilote_robot.py"
 
 int main(void) {
     int choix = 0;
@@ -41,7 +42,8 @@ int main(void) {
         printf("1- Ecrire une commande (clavier)\n");
         printf("2- Parler (commande vocale)\n");
         printf("3- Lancer la simulation (turtle)\n");
-        printf("4- Arreter le programme\n");
+        printf("4- Lancer le robot\n");
+        printf("5- Arreter le programme\n");
         printf("-> Choix : ");
 
         if (scanf("%d", &choix) != 1) {
@@ -67,6 +69,10 @@ int main(void) {
                 break;
 
             case 4:
+                system(PYTHON_PILOTE);
+                break;
+
+            case 5:
                 en_cours = 0;
                 break;
 
