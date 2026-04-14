@@ -2,7 +2,7 @@ import serial
 import time
 import os
 
-# Configuration des chemins (identique à simulation.py)
+# Configuration des chemins
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 FICHIER_ACTION = os.path.join(BASE_DIR, "..", "data/action.txt")
 
@@ -28,7 +28,6 @@ def envoyer_arduino(commande, duree=1):
     ser.write(b'S')   # On l'arrête après
     time.sleep(0.1)
 
-# ... (haut du fichier inchangé)
 
 def main():
     print("[ROBOT] Lecture des actions en cours...")
@@ -43,7 +42,7 @@ def main():
         action = parts[0]
 
         if action == "advance":
-            envoyer_arduino('1', duree=1.5) # '1' pour avancer (selon le code de ton collègue)
+            envoyer_arduino('1', duree=1.5) # '1' pour avancer
         elif action == "retreat":
             envoyer_arduino('2', duree=1.5) # '2' pour reculer
         elif action == "turn":
