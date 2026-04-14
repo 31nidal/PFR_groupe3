@@ -108,9 +108,11 @@ void loop() {
   }
 
   // -------- COMMANDES BLUETOOTH --------
-  if (Serial1.available()) {
-    commande = Serial1.read();
-    Serial.println(commande);
+  if (Serial1.available() || Serial.available()) {
+   if (Serial.available()) commande = Serial.read();
+    else if (Serial1.available()) commande = Serial1.read();
+    
+    Serial.print("Commande recue : "); Serial.println(commande);
 
     switch (commande) {
 
