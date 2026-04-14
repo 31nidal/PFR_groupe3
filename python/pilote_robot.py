@@ -25,7 +25,7 @@ def envoyer_arduino(commande, duree=1):
     print(f"[ROBOT] Envoi : {commande}")
     ser.write(commande.encode())
     time.sleep(duree) # Le robot bouge pendant X secondes
-    ser.write(b'S')   # On l'arrête après
+    ser.write(b'3')   # On l'arrête après
     time.sleep(0.1)
 
 
