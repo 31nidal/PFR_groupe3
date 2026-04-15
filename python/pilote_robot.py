@@ -42,14 +42,20 @@ def main():
         action = parts[0]
 
         if action == "advance":
-            envoyer_arduino('1', duree=1.5) # '1' pour avancer
+            distance = parts[1]
+            duree=(int((distance)-0.65)/0.77)+1
+            envoyer_arduino('1', duree) # '1' pour avancer
         elif action == "retreat":
-            envoyer_arduino('2', duree=1.5) # '2' pour reculer
+            distance = parts[1]
+            duree=(int((distance)-0.65)/0.77)+1
+            envoyer_arduino('2', duree) # '2' pour reculer
         elif action == "turn":
+            envoyer_arduino('6', duree=0.1) 
             if parts[1] == "left":
-                envoyer_arduino('4', duree=0.5) # '4' pour gauche
+                envoyer_arduino('4', duree=1.2) # '4' pour gauche
             else:
-                envoyer_arduino('5', duree=0.5) # '5' pour droite
+                envoyer_arduino('5', duree=1.2) # '5' pour droite
+            envoyer_arduino('7', duree=0.1) 
         elif action == "stop":
             envoyer_arduino('3', duree=0.1) # '3' pour stop
             break
