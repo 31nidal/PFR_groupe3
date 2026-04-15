@@ -1,4 +1,3 @@
-<<<<<<< Updated upstream
-=======
-139 134 yellow
->>>>>>> Stashed changes
+111 26 yellow
+123 278 blue
+207 158 red
