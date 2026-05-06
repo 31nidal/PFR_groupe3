@@ -1,28 +1,42 @@
-import time
+#!/usr/bin/env python3
+"""
+lidar_scan.py — Acquisition RPLidar
+Usage : python3 lidar_scan.py | python3 lidar_map.py
+"""
+
 from rplidar import RPLidar
+import time
+import sys
 
-PORT_NAME = '/dev/ttyUSB0'
+PORT = '/dev/ttyUSB0'
 
-def run():
-    lidar = RPLidar(PORT_NAME)
-    info = lidar.get_info()
-    print(f"Lidar connecté : {info}")
+print("▶  Connexion au LiDAR...", file=sys.stderr)
+lidar = RPLidar(PORT)
 
-    try:
-        lidar.start_motor()
-        print('Récupération des distances (Ctrl+C pour stopper)...')
-        for scan in lidar.iter_scans():
-            for (quality, angle, distance) in scan:
-                if distance > 0:
-                    print(f"Angle: {angle:3.2f}° | Distance: {distance:4.2f} mm")
+try:
+    # Attendre que le moteur monte en vitesse
+    print("⏳  Démarrage moteur — attente 2 s...", file=sys.stderr)
+    lidar.start_motor()
+    time.sleep(2)
 
-    except KeyboardInterrupt:
-        print('Arrêt...')
+    print("🔄  Scan en cours (8 s)...", file=sys.stderr)
+    start = time.time()
 
-    finally:
-        lidar.stop()
-        lidar.stop_motor()
-        lidar.disconnect()
+    for scan in lidar.iter_scans():
+        for (_, angle, distance) in scan:
+            print(f"{angle:.2f} {distance:.2f}")
+            sys.stdout.flush()
 
-if __name__ == '__main__':
-    run()
+        if time.time() - start > 8.0:
+            break
+
+except KeyboardInterrupt:
+    print("\n⚠️  Interrompu par l'utilisateur.", file=sys.stderr)
+
+finally:
+    print("⏹  Arrêt du LiDAR...", file=sys.stderr)
+    lidar.stop()
+    lidar.stop_motor()
+    time.sleep(0.5)
+    lidar.disconnect()
+    print("✅  LiDAR déconnecté.", file=sys.stderr)
